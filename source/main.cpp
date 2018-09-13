@@ -1,6 +1,7 @@
 #include <stdio.h>
+#include "driver.h"
 
 int main(int argc, char** argv)
 {
-    printf("%s", argv[1]);
+    Driver driver(argv[1]);
 }

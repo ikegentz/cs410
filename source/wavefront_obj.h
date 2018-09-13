@@ -3,4 +3,4 @@ class Vertex
 {
 public:
     int x, y, z;
-}
+};

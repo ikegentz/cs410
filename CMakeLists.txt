@@ -7,5 +7,5 @@ include_directories(source)
 
 add_executable(cs410
         source/main.cpp
-        source/obj_file_definitions.h
-        source/object_3d.h)
+        source/wavefront_obj.h
+        source/driver.h source/model.h source/driver.cpp)
