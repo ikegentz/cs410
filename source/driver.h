@@ -16,12 +16,12 @@ class Driver
 {
 public:
     Driver(const char* driver_filename);
+    void apply_model_transformations();
 
 private:
     std::vector<Model> models;
 
     void add_model_from_str(std::string line);
-
 };
 
 #endif //CS410_DRIVER_H
