@@ -65,7 +65,7 @@ void WavefrontObj::load_wavefront_file(const char* filename)
         if(infile.fail())
         {
             std::cerr << "Failed to open Wavefront file" << std::endl;
-            return;
+            exit(1);
         }
     }
     std::string line;

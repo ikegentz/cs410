@@ -1,5 +1,5 @@
 **/*.o
 **/.idea/*
 /*.xml
-source/modeltoworld
+PA1/modeltoworld
 cmake-build-debug/
