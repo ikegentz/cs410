@@ -1,6 +1,8 @@
 #include "model.h"
 #include <string>
 #include <sstream>
+#include <iostream>
+
 
 
 std::string Model::to_string()
@@ -34,4 +36,23 @@ void Model::load_from_str(std::string line)
     this->wavefront_filename = tokens.at(tokens.size()-1);
     //load the actual 3D object
     this->obj.load_wavefront_file(this->wavefront_filename.c_str());
+}
+
+void Model::build_transformation_matrix()
+{
+    glm::vec3 translate_vector(this->tx, this->ty, this->tz);
+    std::cout << "TRANS VEC: " << glm::to_string(translate_vector) << std::endl;
+    glm::mat4 translate_matrix = glm::translate(glm::mat4(1.0f), translate_vector);
+    std::cout << "TRANS MAT: " << glm::to_string(translate_matrix) << std::endl;
+
+    std::cout << std::endl;
+    glm::vec3 w(this->wx, this->wy, this->wz);
+    std::cout << "ROTATE VEC: " << glm::to_string(w) << std::endl;
+    w = glm::normalize(w);
+    std::cout << "ROTATE Nrm: " << glm::to_string(w) << std::endl;
+
+
+
+    glm::mat4 rotate_matrix = glm::rotate(glm::mat4(1.0f), this->theta, w);
+    std::cout << "ROTATE MAT: " << glm::to_string(rotate_matrix) << std::endl;
 }

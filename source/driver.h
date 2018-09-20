@@ -17,9 +17,13 @@ class Driver
 public:
     Driver(const char* driver_filename);
     void apply_model_transformations();
+    void create_output_directory();
+    void write_results();
 
 private:
     std::vector<Model> models;
+    const char* driver_filename;
+    std::string output_dir;
 
     void add_model_from_str(std::string line);
 };

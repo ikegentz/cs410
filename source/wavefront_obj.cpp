@@ -54,7 +54,6 @@ std::pair<int, int> WavefrontObj::extract_face_values(const std::string &token)
     return std::make_pair(v, vn);
 }
 
-
 void WavefrontObj::load_wavefront_file(const char* filename)
 {
     std::ifstream infile(filename);
@@ -84,11 +83,20 @@ void WavefrontObj::load_wavefront_file(const char* filename)
         else if(tokens.at(0) == "v")
             this->add_vertex_from_str(tokens);
         else if(tokens.at(0) == "f")
-        {
             this->add_face_from_str(tokens);
-        }
+        else if(tokens.at(0) == "s")
+            this->smoothing = line;
     }
 }
+
+void WavefrontObj::write_wavefront_file(const char* filename)
+{
+    std::ofstream outfile;
+    outfile.open(filename);
+    outfile << "EXAMPLE OUTPUT\n";
+    outfile.close();
+}
+
 
 Vertex::Vertex(): x(0), y(0), z(0) {}
 Vertex::Vertex(float x_, float y_, float z_): x(x_), y(y_), z(z_) {}
