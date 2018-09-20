@@ -3,3 +3,5 @@
 /*.xml
 PA1/modeltoworld
 cmake-build-debug/
+/*.tar
+PA1/driver0*
