@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iostream>
 
-
+Model::Model() : transformation_matrix(glm::mat4(1.0f)) {}
 
 std::string Model::to_string()
 {
@@ -32,9 +32,15 @@ void Model::load_from_str(std::string line)
     this->wz = std::stof(tokens.at(3));
     // extract rotation angle amount
     this->theta = std::stof(tokens.at(4));
-    //extract wavefront filename
+    // extract scale
+    this->scale = std::stof(tokens.at(5));
+    // extract translation
+    this->tx = std::stof(tokens.at(6));
+    this->ty = std::stof(tokens.at(7));
+    this->tz = std::stof(tokens.at(8));
+    // extract wavefront filename
     this->wavefront_filename = tokens.at(tokens.size()-1);
-    //load the actual 3D object
+    // load the actual 3D object
     this->obj.load_wavefront_file(this->wavefront_filename.c_str());
 }
 
@@ -45,14 +51,27 @@ void Model::build_transformation_matrix()
     glm::mat4 translate_matrix = glm::translate(glm::mat4(1.0f), translate_vector);
     std::cout << "TRANS MAT: " << glm::to_string(translate_matrix) << std::endl;
 
-    std::cout << std::endl;
-    glm::vec3 w(this->wx, this->wy, this->wz);
-    std::cout << "ROTATE VEC: " << glm::to_string(w) << std::endl;
-    w = glm::normalize(w);
-    std::cout << "ROTATE Nrm: " << glm::to_string(w) << std::endl;
+    this->transformation_matrix = glm::mat4(translate_matrix);
+    // std::cout << std::endl;
+    // glm::vec3 w(this->wx, this->wy, this->wz);
+    // std::cout << "ROTATE VEC: " << glm::to_string(w) << std::endl;
+    // w = glm::normalize(w);
+    // std::cout << "ROTATE Nrm: " << glm::to_string(w) << std::endl;
+    //
+    //
+    //
+    // glm::mat4 rotate_matrix = glm::rotate(glm::mat4(1.0f), this->theta, w);
+    // std::cout << "ROTATE MAT: " << glm::to_string(rotate_matrix) << std::endl;
+}
 
-
-
-    glm::mat4 rotate_matrix = glm::rotate(glm::mat4(1.0f), this->theta, w);
-    std::cout << "ROTATE MAT: " << glm::to_string(rotate_matrix) << std::endl;
+void Model::apply_transformation_matrix()
+{
+    for(unsigned i = 0; i < this->obj.vertices.size(); ++i)
+    {
+        Vertex vert = this->obj.vertices.at(i);
+        glm::vec4 point = glm::vec4(vert.x, vert.y, vert.z, 1.0f);
+        point = this->transformation_matrix * point;
+        vert = Vertex(point.x, point.y, point.z);
+        this->obj.vertices.at(i) = vert;
+    }
 }

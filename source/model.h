@@ -25,10 +25,13 @@ public:
     float tx, ty, tz;
     std::string wavefront_filename;
     WavefrontObj obj;
+    glm::mat4 transformation_matrix;
 
+    Model();
     std::string to_string();
     void load_from_str(std::string line);
     void build_transformation_matrix();
+    void apply_transformation_matrix();
 };
 
 #endif //CS410_MODEL_H

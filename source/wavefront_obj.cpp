@@ -93,7 +93,15 @@ void WavefrontObj::write_wavefront_file(const char* filename)
 {
     std::ofstream outfile;
     outfile.open(filename);
-    outfile << "EXAMPLE OUTPUT\n";
+
+    for(unsigned i = 0; i < this->vertices.size(); ++i)
+        outfile << this->vertices.at(i).to_string() << "\n";
+
+    outfile << this->smoothing << "\n";
+
+    for(unsigned i = 0; i < this->faces.size(); ++i)
+        outfile << this->faces.at(i).to_string() << "\n";
+
     outfile.close();
 }
 
@@ -101,5 +109,22 @@ void WavefrontObj::write_wavefront_file(const char* filename)
 Vertex::Vertex(): x(0), y(0), z(0) {}
 Vertex::Vertex(float x_, float y_, float z_): x(x_), y(y_), z(z_) {}
 
+std::string Vertex::to_string()
+{
+    std::string ret = "v ";
+    ret = ret + std::to_string(this->x) + " " + std::to_string(this->y) + " " + std::to_string(this->z);
+    return ret;
+}
+
 Face::Face(int v1_, int vn1_, int v2_, int vn2_, int v3_, int vn3_): v1(v1_), vn1(vn1_), v2(v2_), vn2(vn2_), v3(v3_), vn3(vn3_) {}
 Face::Face(const Face &face) : v1(face.v1), vn1(face.vn1), v2(face.v2), vn2(face.vn2), v3(face.v3), vn3(face.vn3) {}
+
+std::string Face::to_string()
+{
+    std::string ret = "f ";
+    ret = ret + std::to_string(this->v1) + "//" + std::to_string(this->vn1) + " ";
+    ret = ret + std::to_string(this->v2) + "//" + std::to_string(this->vn2) + " ";
+    ret = ret + std::to_string(this->v3) + "//" + std::to_string(this->vn3);
+
+    return ret;
+}

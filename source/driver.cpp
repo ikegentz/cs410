@@ -39,6 +39,7 @@ void Driver::apply_model_transformations()
         std::cout << models.at(i).to_string() << std::endl;
 
         this->models.at(i).build_transformation_matrix();
+        this->models.at(i).apply_transformation_matrix();
         // mutliply verts by the matrix
     }
 }

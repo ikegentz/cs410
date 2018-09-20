@@ -38,6 +38,7 @@ public:
 
     Vertex();
     Vertex(float x, float y, float z);
+    std::string to_string();
 };
 
 // Represents a face, defined by vertices
@@ -48,6 +49,7 @@ public:
 
     Face(int v1, int vn1, int v2, int vn2, int v3, int vn3);
     Face(const Face& face);
+    std::string to_string();
 };
 
 #endif //CS410_MODEL_H
