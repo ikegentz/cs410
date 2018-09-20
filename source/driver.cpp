@@ -36,8 +36,6 @@ void Driver::apply_model_transformations()
 {
     for(unsigned i = 0; i < this->models.size(); ++i)
     {
-        std::cout << models.at(i).to_string() << std::endl;
-
         this->models.at(i).build_transformation_matrix();
         this->models.at(i).apply_transformation_matrix();
         // mutliply verts by the matrix
@@ -82,6 +80,7 @@ void Driver::write_results()
             infile = std::ifstream(final_filename);
         }
 
+        std::cout << "Writing " + final_filename << std::endl;
         m.obj.write_wavefront_file(final_filename.c_str());
     }
 }

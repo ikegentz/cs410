@@ -91,6 +91,7 @@ void WavefrontObj::load_wavefront_file(const char* filename)
 
 void WavefrontObj::write_wavefront_file(const char* filename)
 {
+
     std::ofstream outfile;
     outfile.open(filename);
 
