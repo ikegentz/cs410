@@ -13,8 +13,11 @@ class Driver
 {
 public:
     Driver(char* driver_filename);
+
 private:
     std::vector<Model> models;
+
+    void add_model_from_str(std::string line);
 
 };
 

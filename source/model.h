@@ -14,7 +14,9 @@ public:
     float theta;
     float scale;
     float tx, ty, tz;
-    std::string obj_filename;
+    std::string wavefront_filename;
+
+    std::string to_string();
 };
 
 #endif //CS410_MODEL_H
