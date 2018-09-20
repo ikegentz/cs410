@@ -9,10 +9,13 @@
 #include <vector>
 #include "model.h"
 
+/*
+    Loads the driver file and grabs each model's data
+*/
 class Driver
 {
 public:
-    Driver(char* driver_filename);
+    Driver(const char* driver_filename);
 
 private:
     std::vector<Model> models;

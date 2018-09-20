@@ -3,5 +3,6 @@
 
 int main(int argc, char** argv)
 {
-    Driver driver(argv[1]);
+    const char* driver_filename = argv[1];
+    Driver driver(driver_filename);
 }

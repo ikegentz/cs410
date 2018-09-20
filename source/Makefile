@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-Wall -Wextra -pedantic -c
 LFLAGS=-I.
-OBJS=main.o driver.o model.o
+OBJS=main.o driver.o model.o wavefront_obj.o
 EXE=modeltoworld
 
 all: $(OBJS)
@@ -15,6 +15,9 @@ driver.o: driver.cpp driver.h
 
 model.o: model.cpp model.h
 	$(CC) $(CFLAGS) model.cpp
+
+wavefront_obj.o: wavefront_obj.cpp wavefront_obj.h
+	$(CC) $(CFLAGS) wavefront_obj.cpp
 
 clean:
 	rm -rf $(OBJS) $(EXE)
