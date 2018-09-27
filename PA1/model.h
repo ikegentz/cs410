@@ -5,12 +5,13 @@
 #ifndef CS410_MODEL_H
 #define CS410_MODEL_H
 
-#include "wavefront_obj.h"
-#include "glm/glm.hpp"
-//////// REMOVE BEFORE SUBMITTING!!!!
+// GLM Library
 #define GLM_ENABLE_EXPERIMENTAL
+#define GLM_FORCE_SILENT_WARNINGS
+#include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
-//////// REMOVE BEFORE SUBMITTING!!!!
+
+#include "wavefront_obj.h"
 #include <string>
 
 /*
