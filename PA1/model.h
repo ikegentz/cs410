@@ -6,10 +6,10 @@
 #define CS410_MODEL_H
 
 #include "wavefront_obj.h"
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
 //////// REMOVE BEFORE SUBMITTING!!!!
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
+#include "glm/gtx/string_cast.hpp"
 //////// REMOVE BEFORE SUBMITTING!!!!
 #include <string>
 
