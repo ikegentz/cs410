@@ -4,6 +4,9 @@
 #include <iostream>
 #include <string>
 #include <utility>
+#include <iomanip>      // std::setprecision
+#include <cmath>
+
 
 void WavefrontObj::add_vertex(float x, float y, float z)
 {
@@ -91,12 +94,11 @@ void WavefrontObj::load_wavefront_file(const char* filename)
 
 void WavefrontObj::write_wavefront_file(const char* filename)
 {
-
     std::ofstream outfile;
     outfile.open(filename);
 
     for(unsigned i = 0; i < this->vertices.size(); ++i)
-        outfile << this->vertices.at(i).to_string() << "\n";
+        outfile << std::setprecision(6) << this->vertices.at(i).to_string() << "\n";
 
     outfile << this->smoothing << "\n";
 
@@ -106,15 +108,27 @@ void WavefrontObj::write_wavefront_file(const char* filename)
     outfile.close();
 }
 
+ float WavefrontObj::fix_neg_zero(float in)
+ {
+     // fix -0.0000 type stuff
+     if(fabs(in) < ERROR)
+        return fabs(in);
+
+    return in;
+ }
+
 
 Vertex::Vertex(): x(0), y(0), z(0) {}
 Vertex::Vertex(float x_, float y_, float z_): x(x_), y(y_), z(z_) {}
 
 std::string Vertex::to_string()
 {
-    std::string ret = "v ";
-    ret = ret + std::to_string(this->x) + " " + std::to_string(this->y) + " " + std::to_string(this->z);
-    return ret;
+    std::stringstream stream;
+    stream << "v " << std::fixed << std::setprecision(7) <<
+        WavefrontObj::fix_neg_zero(this->x) << " " <<
+        WavefrontObj::fix_neg_zero(this->y) << " " <<
+        WavefrontObj::fix_neg_zero(this->z);
+    return stream.str();
 }
 
 Face::Face(int v1_, int vn1_, int v2_, int vn2_, int v3_, int vn3_): v1(v1_), vn1(vn1_), v2(v2_), vn2(vn2_), v3(v3_), vn3(vn3_) {}

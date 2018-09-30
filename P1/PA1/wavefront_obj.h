@@ -5,6 +5,8 @@
 #ifndef CS410_WAVEFRONT_OBJ_H
 #define CS410_WAVEFRONT_OBJ_H
 
+#define ERROR 0.00001f
+
 #include <vector>
 #include <string>
 
@@ -25,6 +27,8 @@ public:
   void add_face(int v1, int vn1, int v2, int vn2, int v3, int vn3);
   void load_wavefront_file(const char* filename);
   void write_wavefront_file(const char* filename);
+  
+  static float fix_neg_zero(float in);
 
 private:
     std::pair<int, int> extract_face_values(const std::string &token);

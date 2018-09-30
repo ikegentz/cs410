@@ -10,6 +10,7 @@
 #define GLM_FORCE_SILENT_WARNINGS
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
+#include "glm/gtx/transform.hpp"
 
 #include "wavefront_obj.h"
 #include <string>
@@ -33,6 +34,9 @@ public:
     void load_from_str(std::string line);
     void build_transformation_matrix();
     void apply_transformation_matrix();
+
+private:
+    void create_little_m(const glm::vec3& normalized_w, glm::vec3& m);
 };
 
 #endif //CS410_MODEL_H
