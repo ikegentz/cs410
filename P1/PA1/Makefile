@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-Wall -Wextra -pedantic -c
+CFLAGS=-Wall -Wextra -c # -pedantic   COMMENTED OUT FOR GLM UNNAMED STRUCT WARNINGS -- TODO FIX THIS
 LFLAGS=-I.
 OBJS=main.o driver.o model.o wavefront_obj.o
 OUTPUT_DIRS=driver0*/

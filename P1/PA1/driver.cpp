@@ -25,11 +25,15 @@ Driver::Driver(const char *driver_filename)
     std::string line;
     while (std::getline(infile, line))
     {
+        if(line[0] == '#')
+            continue;
+
         Model model;
         // this also loads the wavefront file for the model transformation
         model.load_from_str(line);
         this->models.push_back(model);
     }
+
 }
 
 void Driver::apply_model_transformations()
