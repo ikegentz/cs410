@@ -55,9 +55,9 @@ void Model::create_little_m(const glm::vec3& normalized_w, glm::vec3& m) const
     float sub2 = fabs(normalized_w[2]);
 
     // pick smallest term in w
-    if(sub0 < sub1 && sub0 < sub2)
+    if(sub0 <= sub1 && sub0 <= sub2)
         smallest_index = 0;
-    else if(sub1 < sub0 && sub1 < sub2)
+    else if(sub1 <= sub0 && sub1 <= sub2)
         smallest_index = 1;
     else
         smallest_index = 2;
@@ -72,27 +72,21 @@ void Model::build_rot_matrix(glm::mat4& rot) const
 {
     glm::vec3 w(this->wx, this->wy, this->wz);
     w = glm::normalize(w);
-    std::cout << "NORMALIZED w: " << glm::to_string(w) << std::endl;
 
     glm::vec3 m;
     this->create_little_m(w, m);
-    std::cout << "LITTLE m: " << glm::to_string(m) << std::endl;
 
     glm::vec3 u = glm::cross(w, m);
-    std::cout << "CROSS u: " << glm::to_string(u) << std::endl;
 
     glm::vec3 v = glm::cross(w, u);
-    std::cout << "CROSS v: " << glm::to_string(v) << std::endl;
 
     glm::mat3 rot_mat_step1;
     rot_mat_step1[0] = glm::vec3(WavefrontObj::fix_neg_zero(u.x), WavefrontObj::fix_neg_zero(v.x), WavefrontObj::fix_neg_zero(w.x));
     rot_mat_step1[1] = glm::vec3(WavefrontObj::fix_neg_zero(u.y), WavefrontObj::fix_neg_zero(v.y), WavefrontObj::fix_neg_zero(w.y));
     rot_mat_step1[2] = glm::vec3(WavefrontObj::fix_neg_zero(u.z), WavefrontObj::fix_neg_zero(v.z), WavefrontObj::fix_neg_zero(w.z));
 
-    std::cout << "3x3 ROT: " << glm::to_string(rot_mat_step1) << std::endl;
 
     glm::mat3 rot_mat_step1_tr = glm::transpose(rot_mat_step1);
-    std::cout << "3x3 ROT Tr: " << glm::to_string(rot_mat_step1_tr) << std::endl;
 
     glm::mat3 rot_z;
     float radians = glm::radians(this->theta);
@@ -100,10 +94,12 @@ void Model::build_rot_matrix(glm::mat4& rot) const
     rot_z[1] = glm::vec3(-WavefrontObj::fix_neg_zero(sin(radians)), WavefrontObj::fix_neg_zero(cos(radians)), 0);
     rot_z[2] = glm::vec3(0, 0, 1);
 
-    std::cout << "ROT Z: " << glm::to_string(rot_z) << std::endl;
-
     glm::mat3 final_rot = rot_mat_step1_tr * rot_z * rot_mat_step1;
-    std::cout << "FINAL ROT: " << glm::to_string(final_rot) << std::endl;
+
+    rot[0] = glm::vec4(final_rot[0], 0);
+    rot[1] = glm::vec4(final_rot[1], 0);
+    rot[2] = glm::vec4(final_rot[2], 0);
+    rot[3] = glm::vec4(0,0,0,1);
 }
 
 void Model::build_transformation_matrix()
