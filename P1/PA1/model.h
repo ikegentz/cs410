@@ -30,13 +30,14 @@ public:
     glm::mat4 transformation_matrix;
 
     Model();
-    std::string to_string();
+    std::string to_string() const;
     void load_from_str(std::string line);
     void build_transformation_matrix();
     void apply_transformation_matrix();
 
 private:
-    void create_little_m(const glm::vec3& normalized_w, glm::vec3& m);
+    void create_little_m(const glm::vec3& normalized_w, glm::vec3& m) const;
+    void build_rot_matrix(glm::mat4& rot) const;
 };
 
 #endif //CS410_MODEL_H

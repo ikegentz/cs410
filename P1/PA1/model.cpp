@@ -3,10 +3,11 @@
 #include <sstream>
 #include <iostream>
 #include <cmath>
+#include <math.h>
 
 Model::Model() : transformation_matrix(glm::mat4(1.0f)) {}
 
-std::string Model::to_string()
+std::string Model::to_string() const
 {
     std::string output = "Model: " + this->wavefront_filename + "\n";
     output = output + "\taxis-angle (" + std::to_string(wx) + ", " + std::to_string(wy) + ", " + std::to_string(wz) + ")\n";
@@ -45,10 +46,8 @@ void Model::load_from_str(std::string line)
     this->obj.load_wavefront_file(this->wavefront_filename.c_str());
 }
 
-void Model::create_little_m(const glm::vec3& normalized_w, glm::vec3& m)
+void Model::create_little_m(const glm::vec3& normalized_w, glm::vec3& m) const
 {
-    // make sure we don't pick a 0 value
-    const float ERROR = 0.00001f;
     unsigned smallest_index = 0;
 
     float sub0 = fabs(normalized_w[0]);
@@ -69,6 +68,44 @@ void Model::create_little_m(const glm::vec3& normalized_w, glm::vec3& m)
     glm::normalize(m);
 }
 
+void Model::build_rot_matrix(glm::mat4& rot) const
+{
+    glm::vec3 w(this->wx, this->wy, this->wz);
+    w = glm::normalize(w);
+    std::cout << "NORMALIZED w: " << glm::to_string(w) << std::endl;
+
+    glm::vec3 m;
+    this->create_little_m(w, m);
+    std::cout << "LITTLE m: " << glm::to_string(m) << std::endl;
+
+    glm::vec3 u = glm::cross(w, m);
+    std::cout << "CROSS u: " << glm::to_string(u) << std::endl;
+
+    glm::vec3 v = glm::cross(w, u);
+    std::cout << "CROSS v: " << glm::to_string(v) << std::endl;
+
+    glm::mat3 rot_mat_step1;
+    rot_mat_step1[0] = glm::vec3(WavefrontObj::fix_neg_zero(u.x), WavefrontObj::fix_neg_zero(v.x), WavefrontObj::fix_neg_zero(w.x));
+    rot_mat_step1[1] = glm::vec3(WavefrontObj::fix_neg_zero(u.y), WavefrontObj::fix_neg_zero(v.y), WavefrontObj::fix_neg_zero(w.y));
+    rot_mat_step1[2] = glm::vec3(WavefrontObj::fix_neg_zero(u.z), WavefrontObj::fix_neg_zero(v.z), WavefrontObj::fix_neg_zero(w.z));
+
+    std::cout << "3x3 ROT: " << glm::to_string(rot_mat_step1) << std::endl;
+
+    glm::mat3 rot_mat_step1_tr = glm::transpose(rot_mat_step1);
+    std::cout << "3x3 ROT Tr: " << glm::to_string(rot_mat_step1_tr) << std::endl;
+
+    glm::mat3 rot_z;
+    float radians = glm::radians(this->theta);
+    rot_z[0] = glm::vec3(WavefrontObj::fix_neg_zero(cos(radians)), WavefrontObj::fix_neg_zero(sin(radians)), 0);
+    rot_z[1] = glm::vec3(-WavefrontObj::fix_neg_zero(sin(radians)), WavefrontObj::fix_neg_zero(cos(radians)), 0);
+    rot_z[2] = glm::vec3(0, 0, 1);
+
+    std::cout << "ROT Z: " << glm::to_string(rot_z) << std::endl;
+
+    glm::mat3 final_rot = rot_mat_step1_tr * rot_z * rot_mat_step1;
+    std::cout << "FINAL ROT: " << glm::to_string(final_rot) << std::endl;
+}
+
 void Model::build_transformation_matrix()
 {
     glm::vec3 translate_vector(this->tx, this->ty, this->tz);
@@ -79,21 +116,10 @@ void Model::build_transformation_matrix()
 
     glm::vec3 w(this->wx, this->wy, this->wz);
     w = glm::normalize(w);
-    // std::cout << "NORMALIZED w: " << glm::to_string(w) << std::endl;
-    //
-    // glm::vec3 m;
-    // this->create_little_m(w, m);
-    // std::cout << "LITTLE m: " << glm::to_string(m) << std::endl;
-    //
-    // glm::vec3 u = glm::cross(w, m);
-    // std::cout << "CROSS u: " << glm::to_string(u) << std::endl;
-    //
-    // glm::vec3 v = glm::cross(w, u);
-    // std::cout << "CROSS v: " << glm::to_string(v) << std::endl;
 
-    glm::mat4 rotate_matrix = glm::rotate(glm::radians(this->theta), w);
-    std::cout << "THETA: " << this->theta << std::endl;
-    std::cout << "ROTATE MATRIX: " << glm::to_string(rotate_matrix) << std::endl;
+    //glm::mat4 rotate_matrix = glm::rotate(glm::radians(this->theta), w);
+    glm::mat4 rotate_matrix;
+    this->build_rot_matrix(rotate_matrix);
 
     this->transformation_matrix = translate_matrix * rotate_matrix * scale_matrix;
 
