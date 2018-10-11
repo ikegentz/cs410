@@ -10,6 +10,8 @@
 #include <unordered_map>
 
 #include "model.h"
+#include "camera.h"
+#include "light_source.h"
 
 /*
     Loads the driver file and grabs each model's data
@@ -23,10 +25,13 @@ public:
     void write_results();
 
 private:
-    std::vector<Model> models;
     std::unordered_map<std::string, WavefrontObj> wavefronts;
     const char* driver_filename;
     std::string output_dir;
+
+    std::vector<Model> models;
+    std::vector<LightSource> light_sources;
+    Camera camera;
 
     void add_model_from_str(std::string line);
 };

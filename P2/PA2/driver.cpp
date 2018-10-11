@@ -22,19 +22,62 @@ Driver::Driver(const char *driver_filename)
         return;
     }
 
+    std::cout << "LOADING DRIVER FILE" << std::endl;
+
     std::string line;
     while (std::getline(infile, line))
     {
         if(line[0] == '#')
             continue;
-
-        Model model;
-        // this also loads the wavefront file for the model transformation
-        model.load_from_str(line);
-        std::cout << model.wavefront_filename << std::endl;
-        this->models.push_back(model);
+        else if(line.find("eye") != std::string::npos)
+        {
+            camera.load_eye(line);
+        }
+        else if(line.find("look") != std::string::npos)
+        {
+            camera.load_look(line);
+        }
+        else if(line.find("bounds") != std::string::npos)
+        {
+            camera.load_bounds(line);
+        }
+        else if(line.find("ambient") != std::string::npos)
+        {
+            camera.load_ambient(line);
+        }
+        else if(line.find("light") != std::string::npos)
+        {
+            LightSource light;
+            light.load_light(line);
+            light_sources.push_back(light);
+        }
+        else if(line.find("model") != std::string::npos)
+        {
+            Model model;
+            // this also loads the wavefront file for the model transformation
+            model.load_from_str(line);
+            this->models.push_back(model);
+        }
+        else if(line.find("up") != std::string::npos)
+        {
+            camera.load_up(line);
+        }
+        else if(line.find("res") != std::string::npos)
+        {
+            camera.load_res(line);
+        }
+        else if(line.find("d ") != std::string::npos)
+        {
+            camera.load_d(line);
+        }
     }
 
+    // Print out what we loaded for quick debugging
+    camera.print();
+    for(LightSource l : light_sources)
+    {
+        l.print();
+    }
 }
 
 void Driver::apply_model_transformations()
