@@ -15,6 +15,7 @@
 #include "glm/gtx/transform.hpp"
 
 #include "wavefront_obj.h"
+#include "material.h"
 #include <string>
 
 /*
@@ -29,6 +30,7 @@ public:
     float tx, ty, tz;
     std::string wavefront_filename;
     WavefrontObj obj;
+    Material material;
     glm::mat4 transformation_matrix;
 
     Model();

@@ -122,11 +122,11 @@ void WavefrontObj::write_wavefront_file(const char* filename)
     std::cout << "WAVEFRONT OBJ" << std::endl;
     for(Vertex v : vertices)
     {
-        std::cout << v.to_string() << std::endl;
+        std::cout << "\t" << v.to_string() << std::endl;
     }
     for(Face f : faces)
     {
-        std::cout << f.to_string() << std::endl;
+        std::cout << "\t" << f.to_string() << std::endl;
     }
  }
 

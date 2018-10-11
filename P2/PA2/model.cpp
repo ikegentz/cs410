@@ -42,8 +42,18 @@ void Model::load_from_str(std::string line)
     this->tz = std::stof(tokens.at(8));
     // extract wavefront filename
     this->wavefront_filename = tokens.at(tokens.size()-1);
+
     // load the actual 3D object
     this->obj.load_wavefront_file(this->wavefront_filename.c_str());
+    std::cout << "LOADED " << this->wavefront_filename << std::endl;
+    this->obj.print();
+
+    //load material properties
+    unsigned chop = this->wavefront_filename.find_last_of(".");
+    std::string material_filename = this->wavefront_filename.substr(0,chop) + ".mtl";
+    this->material.load_material(material_filename);
+    std::cout << "LOADED " << material_filename << std::endl;
+    this->material.print();
 }
 
 void Model::create_little_m(const glm::vec3& normalized_w, glm::vec3& m) const
