@@ -9,7 +9,7 @@ Model::Model() : transformation_matrix(glm::mat4(1.0f)) {}
 
 std::string Model::to_string() const
 {
-    std::string output = "Model: " + this->wavefront_filename + "\n";
+    std::string output = "MODEL: " + this->wavefront_filename + "\n";
     output = output + "\taxis-angle (" + std::to_string(wx) + ", " + std::to_string(wy) + ", " + std::to_string(wz) + ")\n";
     output = output + "\ttheta: " + std::to_string(theta) + "\n";
     output = output + "\tscale: " + std::to_string(scale) + "\n";
@@ -118,8 +118,6 @@ void Model::build_transformation_matrix()
     this->build_rot_matrix(rotate_matrix);
 
     this->transformation_matrix = translate_matrix * rotate_matrix * scale_matrix;
-
-    std::cout << std::endl;
 }
 
 void Model::apply_transformation_matrix()

@@ -97,7 +97,7 @@ void Camera::print()
     "\t" << "D: " << d << "\n" <<
     "\t" << "Bounds: " << glm::to_string(bounds) << "\n" <<
     "\t" << "Res: " << glm::to_string(res) << "\n" <<
-    "\t" << "Ambient: " << glm::to_string(ambient) << "\n" <<
+    "\t" << "Ambient: " << glm::to_string(ambient) <<
     std::endl;
 
 }

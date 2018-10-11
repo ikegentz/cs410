@@ -75,19 +75,24 @@ Driver::Driver(const char *driver_filename)
     // Print out what we loaded for quick debugging
     camera.print();
     for(LightSource l : light_sources)
-    {
-        l.print();
-    }
+    { l.print(); }
 }
 
 void Driver::apply_model_transformations()
 {
-    for(unsigned i = 0; i < this->models.size(); ++i)
+    std::cout << "APPLYING MODEL TRANSFORMATIONS" << std::endl;
+
+    unsigned i;
+    for(i = 0; i < this->models.size(); ++i)
     {
         this->models.at(i).build_transformation_matrix();
         this->models.at(i).apply_transformation_matrix();
         // mutliply verts by the matrix
     }
+
+    std::cout << i << " MODELS TRANSFORMED" << std::endl;
+    for(Model m : models)
+    { std::cout << m.to_string() << std::endl; }
 }
 
 void Driver::create_output_directory()

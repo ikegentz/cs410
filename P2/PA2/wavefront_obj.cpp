@@ -117,6 +117,19 @@ void WavefrontObj::write_wavefront_file(const char* filename)
     return in;
  }
 
+ void WavefrontObj::print()
+ {
+    std::cout << "WAVEFRONT OBJ" << std::endl;
+    for(Vertex v : vertices)
+    {
+        std::cout << v.to_string() << std::endl;
+    }
+    for(Face f : faces)
+    {
+        std::cout << f.to_string() << std::endl;
+    }
+ }
+
 
 Vertex::Vertex(): x(0), y(0), z(0) {}
 Vertex::Vertex(float x_, float y_, float z_): x(x_), y(y_), z(z_) {}

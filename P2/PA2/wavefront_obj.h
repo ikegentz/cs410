@@ -30,6 +30,8 @@ public:
   
   static float fix_neg_zero(float in);
 
+  void print();
+
 private:
     std::pair<int, int> extract_face_values(const std::string &token);
 };
