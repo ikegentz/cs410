@@ -12,6 +12,7 @@ int main(int argc, char** argv)
     const char* driver_filename = argv[1];
     Driver driver(driver_filename);
     driver.apply_model_transformations();
+    driver.generate_image_plane();
     //driver.create_output_directory();
     //driver.write_results();
 }

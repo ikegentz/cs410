@@ -12,6 +12,7 @@
 #include "model.h"
 #include "camera.h"
 #include "light_source.h"
+#include "image.h"
 
 /*
     Loads the driver file and grabs each model's data
@@ -23,6 +24,7 @@ public:
     void apply_model_transformations();
     void create_output_directory();
     void write_results();
+    void generate_image_plane();
 
 private:
     std::unordered_map<std::string, WavefrontObj> wavefronts;
@@ -32,6 +34,7 @@ private:
     std::vector<Model> models;
     std::vector<LightSource> light_sources;
     Camera camera;
+    Image image;
 
     void add_model_from_str(std::string line);
 };

@@ -72,6 +72,8 @@ Driver::Driver(const char *driver_filename)
         }
     }
 
+    image = Image(this->camera.bounds, this->camera.res);
+
     // Print out what we loaded for quick debugging
     camera.print();
     for(LightSource l : light_sources)
@@ -137,3 +139,9 @@ void Driver::write_results()
         m.obj.write_wavefront_file(final_filename.c_str());
     }
 }
+
+void Driver::generate_image_plane()
+{
+    this->image.create_pixel_array();
+}
+

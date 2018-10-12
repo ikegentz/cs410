@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-Wall -Wextra -c # -pedantic   COMMENTED OUT FOR GLM UNNAMED STRUCT WARNINGS -- TODO FIX THIS
 LFLAGS=-I.
-OBJS=main.o driver.o model.o wavefront_obj.o camera.o light_source.o material.o
+OBJS=main.o driver.o model.o wavefront_obj.o camera.o light_source.o material.o ray.o pixel.o image.o
 OUTPUT_DIRS=driver0*/
 EXE=raytracer
 
@@ -18,6 +18,9 @@ camera.o: camera.h camera.cpp
 driver.o: driver.cpp driver.h
 	$(CC) $(CFLAGS) driver.cpp
 
+image.o: image.cpp image.h
+	$(CC) $(CFLAGS) image.cpp
+
 light_source.o: light_source.cpp light_source.h
 	$(CC) $(CFLAGS) light_source.cpp
 
@@ -26,6 +29,12 @@ material.o: material.cpp material.h
 
 model.o: model.cpp model.h
 	$(CC) $(CFLAGS) model.cpp
+
+pixel.o: pixel.cpp pixel.h
+	$(CC) $(CFLAGS) pixel.cpp
+
+ray.o: ray.cpp ray.h
+	$(CC) $(CFLAGS) ray.cpp
 
 wavefront_obj.o: wavefront_obj.cpp wavefront_obj.h
 	$(CC) $(CFLAGS) wavefront_obj.cpp
