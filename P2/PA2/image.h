@@ -19,6 +19,8 @@
 
 #include "pixel.h"
 #include "camera.h"
+#include "model.h"
+#include "wavefront_obj.h"
 
 class Image
 {
@@ -28,14 +30,13 @@ public:
     glm::vec4 bounds;
     glm::vec2 res;
 
-    // create the big array of pixels to shoot the rays
-
     std::vector<std::vector<Pixel>> pixel_array;
-    void create_pixel_array(const Camera &camera);
+    void render_image(const Camera &camera, std::vector<Model> &models);
     void pixelPt(const unsigned i, const unsigned j, const double near,
                         const glm::vec3 &eye, const glm::vec3 &wv, const glm::vec3 &uv, const glm::vec3 &vv, Ray &ray);
 
-    // TODO raycast function here
+    // takes a pixel (containing the ray), and sets the pixels RGB and hit
+    void ray_cast(Pixel &pixel, std::vector<Model> &models);
     // TODO colorme function here
 };
 

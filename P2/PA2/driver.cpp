@@ -142,6 +142,6 @@ void Driver::write_results()
 
 void Driver::generate_image_plane()
 {
-    this->image.create_pixel_array(this->camera);
+    this->image.render_image(this->camera, this->models);
 }
 

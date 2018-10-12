@@ -16,7 +16,7 @@ Image::Image(const glm::vec4 &bounds, const glm::vec2 &res)
     this->res = glm::vec2(res);
 }
 
-void Image::create_pixel_array(const Camera &camera)
+void Image::render_image(const Camera &camera, std::vector<Model> &models)
 {
     // create y rows of Pixels with x columns, default Pixel value
     this->pixel_array.resize(this->res.y, std::vector<Pixel>(this->res.x, Pixel()));
@@ -42,10 +42,13 @@ void Image::create_pixel_array(const Camera &camera)
     {
         for(unsigned col = 0; col < this->res.x; ++col)
         {
+            // set the ray's position and direction for this pixel
             this->pixelPt(row, col, -camera.d, camera.eye, wv, uv, vv, this->pixel_array[row][col].ray);
+            // cast this ray to see if it hits anything
+            this->ray_cast(this->pixel_array[row][col], models);
+            // do the ray cast for this pixel
         }
     }
-    this->pixel_array[0][0].ray.print();
 
 }
 
@@ -68,3 +71,37 @@ void Image::pixelPt(const unsigned i, const unsigned j, const double near,
     ray.position = pixpt;
     ray.set_direction(shoot);
 }
+
+void Image::ray_cast(Pixel &pixel, std::vector<Model> &models)
+{
+    std::cout << "CASTING RAY..." << std::endl;
+
+    // loop through all faces in the world (all models)
+    for(Model m : models)
+    {
+        // get vertices so we can use face indices
+        std::vector<Vertex> verts = m.obj.vertices;
+        // get each face in the object
+        for(Face f : m.obj.faces)
+        {
+            Vertex A = verts[f.v1-1];
+            Vertex B = verts[f.v2-1];
+            Vertex C = verts[f.v3-1];
+
+            glm::vec3 Av = glm::vec3(A.x, A.y, A.z);
+            glm::vec3 Bv = glm::vec3(B.x, B.y, B.z);
+            glm::vec3 Cv = glm::vec3(C.x, C.y, C.z);
+
+            glm::vec3 Lv = pixel.ray.position;
+            glm::vec3 Dv = pixel.ray.get_direction();
+
+            std::cout << "Face: " << "\n" <<
+            glm::to_string(Av) <<
+            glm::to_string(Bv) <<
+            glm::to_string(Cv)<< std::endl;
+            pixel.print();
+            std::cout << "\n" << std::endl;
+        }
+    }
+}
+
