@@ -20,5 +20,5 @@ void Ray::print() const
 void Ray::set_direction(const glm::vec3& direc)
 {
     this->direction = glm::vec3(direc);
-    glm::normalize(this->direction);
+    this->direction = glm::normalize(this->direction);
 }

@@ -18,6 +18,7 @@
 #include <iostream>
 
 #include "pixel.h"
+#include "camera.h"
 
 class Image
 {
@@ -30,7 +31,9 @@ public:
     // create the big array of pixels to shoot the rays
 
     std::vector<std::vector<Pixel>> pixel_array;
-    void create_pixel_array();
+    void create_pixel_array(const Camera &camera);
+    void pixelPt(const unsigned i, const unsigned j, const double near,
+                        const glm::vec3 &eye, const glm::vec3 &wv, const glm::vec3 &uv, const glm::vec3 &vv, Ray &ray);
 
     // TODO raycast function here
     // TODO colorme function here
