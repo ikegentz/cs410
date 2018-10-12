@@ -48,9 +48,9 @@ void Image::render_image(const Camera &camera, std::vector<Model> &models)
             this->ray_cast(this->pixel_array[row][col], models);
             // do the ray cast for this pixel
             if(this->pixel_array[row][col].hit)
-                std::cout << "#";
+                std::cout << " # ";
             else
-                std::cout << "-";
+                std::cout << " ' ";
         }
         std::cout << std::endl;
     }
@@ -98,24 +98,15 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models)
             glm::vec3 Lv = pixel.ray.position;
             glm::vec3 Dv = pixel.ray.get_direction();
 
-//            std::cout << "Face: " << "\n" <<
-//            "Av: " << glm::to_string(Av) <<
-//            ", Bv: " << glm::to_string(Bv) <<
-//            ", Cv: " << glm::to_string(Cv) <<
-//            ", Lv: " << glm::to_string(Lv) <<
-//            ", Dv: " << glm::to_string(Dv) << std::endl;
-//            pixel.print();
-
             glm::mat3x3 M = glm::mat3x3(Av-Bv, Av-Cv, Dv);
             glm::mat3x3 M1 = glm::mat3x3(Av-Lv, Av-Cv, Dv);
             glm::mat3x3 M2 = glm::mat3x3(Av-Bv, Av-Lv, Dv);
             glm::mat3x3 M3 = glm::mat3x3(Av-Bv, Av-Cv,Av-Lv);
 
-            double beta = glm::determinant(M1) / glm::determinant(M);
-            double gamma = glm::determinant(M2) / glm::determinant(M);
-            double t = glm::determinant(M3) / glm::determinant(M);
-
-            //std::cout << "Beta: " << beta << ", Gamma: " << gamma << ", t" << t << std::endl;
+            double detM = glm::determinant(M);
+            double beta = glm::determinant(M1) / detM;
+            double gamma = glm::determinant(M2) / detM;
+            double t = glm::determinant(M3) / detM;
 
             if(beta >= 0.0f && gamma >= 0.0f && beta+gamma <= 1.0f && t > 0.0f)
             {
