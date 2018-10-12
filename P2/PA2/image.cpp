@@ -19,8 +19,8 @@ Image::Image(const glm::vec4 &bounds, const glm::vec2 &res)
 void Image::render_image(const Camera &camera, std::vector<Model> &models)
 {
     // create y rows of Pixels with x columns, default Pixel value
-    this->pixel_array.resize(this->res.y, std::vector<Pixel>(this->res.x, Pixel()));
-    std::cout << "CREATED IMAGE ARRAY OF " << this->res.y << " ROWS x " << this->res.x << " COLS" << std::endl;
+    this->pixel_array.resize(this->res.x, std::vector<Pixel>(this->res.y, Pixel()));
+    std::cout << "CREATED IMAGE ARRAY OF " << this->res.x << " ROWS x " << this->res.y << " COLS" << std::endl;
     std::cout << "SHOOTING PIXEL RAYS INTO SCENE..." << std::endl;
 
     double left = this->bounds.x;
@@ -38,21 +38,23 @@ void Image::render_image(const Camera &camera, std::vector<Model> &models)
     vv = glm::normalize(vv); // TODO Does this need to be normalized????
 
     //we will be looping through rows, so go through vertically
-    for(unsigned row = 0; row < this->res.y; ++row)
+    for(unsigned row = 0; row < this->res.x; ++row)
     {
-        for(unsigned col = 0; col < this->res.x; ++col)
+        for(unsigned col = 0; col < this->res.y; ++col)
         {
             // set the ray's position and direction for this pixel
             this->pixelPt(row, col, -camera.d, camera.eye, wv, uv, vv, this->pixel_array[row][col].ray);
             // cast this ray to see if it hits anything
             this->ray_cast(this->pixel_array[row][col], models);
-            // do the ray cast for this pixel
-            if(this->pixel_array[row][col].hit)
-                std::cout << " # ";
-            else
-                std::cout << " ' ";
+
+            //print ASCII image
+//            if(this->pixel_array[row][col].hit)
+//                std::cout << " # ";
+//            else
+//                std::cout << " ' ";
         }
-        std::cout << std::endl;
+        // used for printing ASCII picture
+        //std::cout << std::endl;
     }
 
 }
@@ -85,8 +87,9 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models)
         // get vertices so we can use face indices
         std::vector<Vertex> verts = m.obj.vertices;
         // get each face in the object
-        for(Face f : m.obj.faces)
+        for(unsigned face_index = 0; face_index < m.obj.faces.size(); ++face_index)
         {
+            Face f = m.obj.faces[face_index];
             Vertex A = verts[f.v1-1];
             Vertex B = verts[f.v2-1];
             Vertex C = verts[f.v3-1];
@@ -108,12 +111,57 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models)
             double gamma = glm::determinant(M2) / detM;
             double t = glm::determinant(M3) / detM;
 
-            if(beta >= 0.0f && gamma >= 0.0f && beta+gamma <= 1.0f && t > 0.0f)
+            if(beta >= 0.0 && gamma >= 0.0 && beta+gamma <= 1.0 && t > 0.0)
             {
-                pixel.hit = true;
-                pixel.rgba = glm::vec4(1, 0, 0, 1);
+                if(t < pixel.last_t || !pixel.hit)
+                {
+                    pixel.last_t = t;
+                    pixel.face_index = face_index;
+                    pixel.hit = true;
+                }
+                pixel.rgba = glm::vec4(1.0, 0.0, 0.0, 1.0); // write [0.0,1.0] for each RGB
             }
         }
     }
+    if(!pixel.hit)
+        pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
+}
+
+void Image::write_image(const char* filename) const
+{
+    // We don't HAVE to do image write here but for simplicity write image after entire raycast is done
+    // for speed though once we confirm everything works, we should write image as we go through the initial raycast
+    // for each pixel
+    std::ofstream outfile;
+    outfile.open(filename);
+
+    outfile << "P3" << std::endl;
+    outfile << this->res.y << " " << this->res.x << " 255" << std::endl;
+
+    //we will be looping through rows, so go through vertically
+    for(unsigned row = 0; row < this->res.y; ++row)
+    {
+        for (unsigned col = 0; col < this->res.x; ++col)
+        {
+            glm::vec4 rgba = this->pixel_array[row][col].rgba;
+            outfile << this->bound_rgb(rgba.r) << " ";
+            outfile << this->bound_rgb(rgba.g) << " ";
+            outfile << this->bound_rgb(rgba.b) << " ";
+        }
+        outfile << std::endl;
+    }
+
+    outfile.close();
+}
+
+unsigned Image::bound_rgb(double in_color) const
+{
+    int color_int = int(in_color * 255);
+    if(color_int > 255)
+        color_int = 255;
+    if(color_int < 0)
+        color_int = 0;
+
+    return unsigned(color_int);
 }
 

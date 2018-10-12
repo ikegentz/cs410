@@ -16,6 +16,10 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <sstream>
+#include <fstream>
+#include <utility>
+#include <iomanip>      // std::setprecision
 
 #include "pixel.h"
 #include "camera.h"
@@ -34,7 +38,8 @@ public:
     void render_image(const Camera &camera, std::vector<Model> &models);
     void pixelPt(const unsigned i, const unsigned j, const double near,
                         const glm::vec3 &eye, const glm::vec3 &wv, const glm::vec3 &uv, const glm::vec3 &vv, Ray &ray);
-
+    void write_image(const char* filename) const;
+    unsigned bound_rgb(double in_color) const;
     // takes a pixel (containing the ray), and sets the pixels RGB and hit
     void ray_cast(Pixel &pixel, std::vector<Model> &models);
     // TODO colorme function here

@@ -140,8 +140,10 @@ void Driver::write_results()
     }
 }
 
-void Driver::generate_image_plane()
+void Driver::generate_image(const char* filename)
 {
     this->image.render_image(this->camera, this->models);
+    std::cout << "WRITING " << filename << std::endl;
+    this->image.write_image(filename);
 }
 

@@ -24,7 +24,7 @@ public:
     void apply_model_transformations();
     void create_output_directory();
     void write_results();
-    void generate_image_plane();
+    void generate_image(const char* filename);
 
 private:
     std::unordered_map<std::string, WavefrontObj> wavefronts;
