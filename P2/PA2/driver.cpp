@@ -142,7 +142,7 @@ void Driver::write_results()
 
 void Driver::generate_image(const char* filename)
 {
-    this->image.render_image(this->camera, this->models);
+    this->image.render_image(this->camera, this->models, this->light_sources);
     std::cout << "WRITING " << filename << std::endl;
     this->image.write_image(filename);
 }

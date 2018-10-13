@@ -16,7 +16,7 @@ Image::Image(const glm::vec4 &bounds, const glm::vec2 &res)
     this->res = glm::vec2(res);
 }
 
-void Image::render_image(const Camera &camera, std::vector<Model> &models)
+void Image::render_image(const Camera &camera, std::vector<Model> &models, std::vector<LightSource> &lights)
 {
     // create y rows of Pixels with x columns, default Pixel value
     this->pixel_array.resize(this->res.x, std::vector<Pixel>(this->res.y, Pixel()));
@@ -45,7 +45,7 @@ void Image::render_image(const Camera &camera, std::vector<Model> &models)
             // set the ray's position and direction for this pixel
             this->pixelPt(row, col, -camera.d, camera.eye, wv, uv, vv);
             // cast this ray to see if it hits anything
-            this->ray_cast(this->pixel_array[row][col], models);
+            this->ray_cast(this->pixel_array[row][col], models, lights, camera);
 
             //print ASCII image
 //            if(this->pixel_array[row][col].hit)
@@ -80,9 +80,11 @@ void Image::pixelPt(const unsigned i, const unsigned j, const double near,
     ray.set_direction(shoot);
 }
 
-void Image::ray_cast(Pixel &pixel, std::vector<Model> &models)
+void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<LightSource> &lights, const Camera &camera)
 {
     // loop through all faces in the world (all models)
+    Material &mat = models[0].material;
+    glm::vec3 Av, Bv, Cv;
     for(Model m : models)
     {
         // get vertices so we can use face indices
@@ -95,9 +97,9 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models)
             Vertex B = verts[f.v2-1];
             Vertex C = verts[f.v3-1];
 
-            glm::vec3 Av = glm::vec3(A.x, A.y, A.z);
-            glm::vec3 Bv = glm::vec3(B.x, B.y, B.z);
-            glm::vec3 Cv = glm::vec3(C.x, C.y, C.z);
+            Av = glm::vec3(A.x, A.y, A.z);
+            Bv = glm::vec3(B.x, B.y, B.z);
+            Cv = glm::vec3(C.x, C.y, C.z);
 
             glm::vec3 Lv = pixel.ray.position;
             glm::vec3 Dv = pixel.ray.get_direction();
@@ -119,17 +121,43 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models)
                     pixel.last_t = t;
                     pixel.face_index = face_index;
                     pixel.hit = true;
+                    mat = m.material;
                 }
             }
         }
     }
     if(pixel.hit)
-        pixel.rgba = glm::vec4(1.0, 0.0, 0.0, 1.0); // write black for background color
-        // make this == color_me (pass intersection point as t * ray.direction
+        pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t), mat, lights, camera.ambient,
+                Av, Bv, Cv);
     else
         pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
+}
 
+glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
+        const glm::vec3 &Av, const glm::vec3 &Bv, const glm::vec3 &Cv)
+{
+    glm::vec3 I = glm::vec3(ambient.x * mat.ka.x, ambient.y * mat.ka.y, ambient.z * mat.ka.z); // get ambient as base light amount
+    // 2 edges of the triangle (face)
+    glm::vec3 E1 = Bv - Av;
+    glm::vec3 E2 = Cv - Av;
+    // calculate surface normal
+    glm::vec3 N = glm::normalize(glm::cross(E1, E2));
 
+    for(LightSource light : lights)
+    {
+        glm::vec3 L;
+        // get direction to light source
+        if(light.infinity)
+            L = glm::normalize(light.position * 1000000.0f - intersection_point);
+        else
+            L = glm::normalize(light.position - intersection_point);
+        // Idiffuse = KdB(N dot L)
+        glm::vec3 diffuse = glm::vec3(mat.kd.x * light.rgb_amount.x, mat.kd.y * light.rgb_amount.y, mat.kd.z * light.rgb_amount.z) * glm::dot(N, L);
+        std::cout << "DOT: " << glm::dot(N, L) << std::endl;
+        I = I + diffuse;
+    }
+
+    return glm::vec4(I, 1.0);
 }
 
 void Image::write_image(const char* filename) const

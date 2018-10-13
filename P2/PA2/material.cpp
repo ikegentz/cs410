@@ -9,6 +9,12 @@
 #include <fstream>
 #include <iostream>
 
+Material::Material()
+{
+    this->ka = glm::vec3(1.0, 1.0, 1.0);
+    this->kd = glm::vec3(1.0, 1.0, 1.0);
+}
+
 void Material::load_material(std::string filename)
 {
     std::ifstream infile(filename);

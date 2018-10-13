@@ -17,6 +17,7 @@
 class Material
 {
 public:
+    Material();
     glm::vec3 ka, kd;
     void load_material(std::string filename);
     void print();

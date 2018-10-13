@@ -18,9 +18,10 @@
 class LightSource
 {
 public:
-    // x, y, z, w -- w is generally 1, but 0 indicates infinitely in x,y,z direction
-    glm::vec4 position;
+    LightSource();
+    glm::vec3 position;
     glm::vec3 rgb_amount; // amount of R, G, B emitted by this light
+    bool infinity;
 
     void load_light(std::string light);
     void print();
