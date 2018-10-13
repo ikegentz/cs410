@@ -35,7 +35,7 @@ void Image::render_image(const Camera &camera, std::vector<Model> &models)
     glm::vec3 uv = glm::cross(camera.up, wv);
     uv = glm::normalize(uv);
     glm::vec3 vv = glm::cross(wv, uv);
-    vv = glm::normalize(vv); // TODO Does this need to be normalized????
+    vv = glm::normalize(vv);
 
     //we will be looping through rows, so go through vertically
     for(unsigned row = 0; row < this->res.x; ++row)
@@ -43,7 +43,7 @@ void Image::render_image(const Camera &camera, std::vector<Model> &models)
         for(unsigned col = 0; col < this->res.y; ++col)
         {
             // set the ray's position and direction for this pixel
-            this->pixelPt(row, col, -camera.d, camera.eye, wv, uv, vv, this->pixel_array[row][col].ray);
+            this->pixelPt(row, col, -camera.d, camera.eye, wv, uv, vv);
             // cast this ray to see if it hits anything
             this->ray_cast(this->pixel_array[row][col], models);
 
@@ -60,8 +60,9 @@ void Image::render_image(const Camera &camera, std::vector<Model> &models)
 }
 
 void Image::pixelPt(const unsigned i, const unsigned j, const double near,
-        const glm::vec3 &eye, const glm::vec3 &wv, const glm::vec3 &uv, const glm::vec3 &vv, Ray &ray)
+        const glm::vec3 &eye, const glm::vec3 &wv, const glm::vec3 &uv, const glm::vec3 &vv)
 {
+    Ray &ray = this->pixel_array[i][j].ray;
     float width = res.x;
     float height = res.y;
     double left = this->bounds.x;
@@ -119,12 +120,16 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models)
                     pixel.face_index = face_index;
                     pixel.hit = true;
                 }
-                pixel.rgba = glm::vec4(1.0, 0.0, 0.0, 1.0); // write [0.0,1.0] for each RGB
             }
         }
     }
-    if(!pixel.hit)
+    if(pixel.hit)
+        pixel.rgba = glm::vec4(1.0, 0.0, 0.0, 1.0); // write black for background color
+        // make this == color_me (pass intersection point as t * ray.direction
+    else
         pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
+
+
 }
 
 void Image::write_image(const char* filename) const
@@ -143,7 +148,7 @@ void Image::write_image(const char* filename) const
     {
         for (unsigned col = 0; col < this->res.x; ++col)
         {
-            glm::vec4 rgba = this->pixel_array[row][col].rgba;
+            glm::vec4 rgba = this->pixel_array[col][row].rgba;
             outfile << this->bound_rgb(rgba.r) << " ";
             outfile << this->bound_rgb(rgba.g) << " ";
             outfile << this->bound_rgb(rgba.b) << " ";
