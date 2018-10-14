@@ -127,10 +127,14 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Light
         }
     }
     if(pixel.hit)
-        pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t), mat, lights, camera.ambient,
-                Av, Bv, Cv);
+    {
+        pixel.rgba = this->color_me(/*pixel.ray.get_direction() * float(pixel.last_t) + pixel.ray.position*/ glm::vec3(0,0,0), mat, lights, camera.ambient,
+                                    Av, Bv, Cv);
+    }
     else
+    {
         pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
+    }
 }
 
 glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
@@ -143,21 +147,24 @@ glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vect
     // calculate surface normal
     glm::vec3 N = glm::normalize(glm::cross(E1, E2));
 
-    for(LightSource light : lights)
-    {
-        glm::vec3 L;
-        // get direction to light source
-        if(light.infinity)
-            L = glm::normalize(light.position * 1000000.0f - intersection_point);
-        else
-            L = glm::normalize(light.position - intersection_point);
-        // Idiffuse = KdB(N dot L)
-        glm::vec3 diffuse = glm::vec3(mat.kd.x * light.rgb_amount.x, mat.kd.y * light.rgb_amount.y, mat.kd.z * light.rgb_amount.z) * glm::dot(N, L);
-        std::cout << "DOT: " << glm::dot(N, L) << std::endl;
-        I = I + diffuse;
-    }
+//    for(LightSource light : lights)
+//    {
+//        glm::vec3 L;
+//        // get direction to light source
+//        if(light.infinity)
+//        {
+//            L = glm::normalize(light.position * 1000000.0f - intersection_point);
+//        }
+//        else
+//        {
+//            L = glm::normalize(light.position - intersection_point);
+//        }
+//        // Idiffuse = KdB(N dot L)
+//        glm::vec3 diffuse = glm::vec3(mat.kd.x * light.rgb_amount.x, mat.kd.y * light.rgb_amount.y, mat.kd.z * light.rgb_amount.z) * glm::dot(N, L);
+//        I = I + diffuse;
+//    }
 
-    return glm::vec4(I, 1.0);
+    return glm::vec4(I.x + mat.kd.x, I.y + mat.kd.y, I.z + mat.kd.z, 1.0);
 }
 
 void Image::write_image(const char* filename) const
