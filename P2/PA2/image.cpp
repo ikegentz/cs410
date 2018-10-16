@@ -128,7 +128,7 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Light
     }
     if(pixel.hit)
     {
-        pixel.rgba = this->color_me(/*pixel.ray.get_direction() * float(pixel.last_t) + pixel.ray.position*/ glm::vec3(0,0,0), mat, lights, camera.ambient,
+        pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient,
                                     Av, Bv, Cv);
     }
     else
@@ -146,25 +146,31 @@ glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vect
     glm::vec3 E2 = Cv - Av;
     // calculate surface normal
     glm::vec3 N = glm::normalize(glm::cross(E1, E2));
+    std::cout << glm::to_string(N) << std::endl;
 
-//    for(LightSource light : lights)
-//    {
-//        glm::vec3 L;
-//        // get direction to light source
-//        if(light.infinity)
-//        {
-//            L = glm::normalize(light.position * 1000000.0f - intersection_point);
-//        }
-//        else
-//        {
-//            L = glm::normalize(light.position - intersection_point);
-//        }
-//        // Idiffuse = KdB(N dot L)
-//        glm::vec3 diffuse = glm::vec3(mat.kd.x * light.rgb_amount.x, mat.kd.y * light.rgb_amount.y, mat.kd.z * light.rgb_amount.z) * glm::dot(N, L);
-//        I = I + diffuse;
-//    }
+    for(LightSource light : lights)
+    {
+        glm::vec3 L;
+        // get direction to light source
+        if(light.infinity)
+        {
+            L = glm::normalize(light.position * 1000000.0f - intersection_point);
+        }
+        else
+        {
+            L = glm::normalize(light.position - intersection_point);
+           // std::cout << glm::to_string(L) << std::endl;
+        }
+        // Idiffuse = KdB(N dot L)
+        glm::mat3x3 kds = glm::mat3x3(glm::vec3(mat.kd.x, 0, 0), glm::vec3(0, mat.kd.y, 0), glm::vec3(0,0,mat.kd.z));
+        glm::vec3 diffuse = kds * light.rgb_amount * (glm::dot(N, L));
+        I = I + diffuse;
+    }
 
-    return glm::vec4(I.x + mat.kd.x, I.y + mat.kd.y, I.z + mat.kd.z, 1.0);
+    if(N.y < 0)
+        return glm::vec4(1.0, 0, 0, 1);
+    return glm::vec4(I.x, I.y, I.z, 1.0);
+
 }
 
 void Image::write_image(const char* filename) const
