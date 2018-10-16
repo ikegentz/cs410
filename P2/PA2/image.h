@@ -45,7 +45,7 @@ public:
     // takes a pixel (containing the ray), and sets the pixels RGB and hit
     void ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<LightSource> &lights, const Camera &camera);
     glm::vec4 color_me(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
-                       const glm::vec3 &Av, const glm::vec3 &Bv, const glm::vec3 &Cv);
+                       const Pixel &pixel);
 };
 
 #endif //CS410_IMAGE_H

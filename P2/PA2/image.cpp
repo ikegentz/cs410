@@ -119,9 +119,11 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Light
                 if(t < pixel.last_t || !pixel.hit)
                 {
                     pixel.last_t = t;
-                    pixel.face_index = face_index;
                     pixel.hit = true;
                     mat = m.material;
+                    pixel.Av = Av;
+                    pixel.Bv = Bv;
+                    pixel.Cv = Cv;
                 }
             }
         }
@@ -129,7 +131,7 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Light
     if(pixel.hit)
     {
         pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient,
-                                    Av, Bv, Cv);
+                                    pixel);
     }
     else
     {
@@ -138,15 +140,14 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Light
 }
 
 glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
-        const glm::vec3 &Av, const glm::vec3 &Bv, const glm::vec3 &Cv)
+        const Pixel &pixel)
 {
-    glm::vec3 I = glm::vec3(ambient.x * mat.ka.x, ambient.y * mat.ka.y, ambient.z * mat.ka.z); // get ambient as base light amount
+    glm::vec3 I = glm::vec3(ambient.x*mat.ka.x, ambient.y*mat.ka.y, ambient.z*mat.ka.z); // get ambient as base light amount
     // 2 edges of the triangle (face)
-    glm::vec3 E1 = Bv - Av;
-    glm::vec3 E2 = Cv - Av;
+    glm::vec3 E1 = pixel.Bv - pixel.Av;
+    glm::vec3 E2 = pixel.Cv - pixel.Av;
     // calculate surface normal
     glm::vec3 N = glm::normalize(glm::cross(E1, E2));
-    std::cout << glm::to_string(N) << std::endl;
 
     for(LightSource light : lights)
     {
@@ -159,16 +160,13 @@ glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vect
         else
         {
             L = glm::normalize(light.position - intersection_point);
-           // std::cout << glm::to_string(L) << std::endl;
         }
         // Idiffuse = KdB(N dot L)
         glm::mat3x3 kds = glm::mat3x3(glm::vec3(mat.kd.x, 0, 0), glm::vec3(0, mat.kd.y, 0), glm::vec3(0,0,mat.kd.z));
-        glm::vec3 diffuse = kds * light.rgb_amount * (glm::dot(N, L));
+        glm::vec3 diffuse = kds * light.rgb_amount * (glm::dot(N, -L)); // this is positive in the slides but.. this makes it work so idk :/
         I = I + diffuse;
     }
 
-    if(N.y < 0)
-        return glm::vec4(1.0, 0, 0, 1);
     return glm::vec4(I.x, I.y, I.z, 1.0);
 
 }

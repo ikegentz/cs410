@@ -16,8 +16,6 @@
 class Pixel
 {
 public:
-    // index of closest face we intersected with
-    int face_index;
     // last t value of that face we intersect with
     double last_t;
     // did we hit anything?
@@ -25,6 +23,11 @@ public:
     // the ray we shoot from the image plane into the scene
     Ray ray;
     glm::vec4 rgba;
+
+    // face vertices we of face we interssect with
+    glm::vec3 Av;
+    glm::vec3 Bv;
+    glm::vec3 Cv;
 
     Pixel();
     void print() const;
