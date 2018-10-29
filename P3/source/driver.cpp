@@ -51,6 +51,10 @@ Driver::Driver(const char *driver_filename)
             light.load_light(line);
             light_sources.push_back(light);
         }
+        else if(line.find("sphere") != std::string::npos)
+        {
+            //TODO load sphere here!!!
+        }
         else if(line.find("model") != std::string::npos)
         {
             Model model;
