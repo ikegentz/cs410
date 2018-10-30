@@ -14,12 +14,16 @@
 Driver::Driver(const char *driver_filename)
 {
     this->driver_filename = driver_filename;
-    std::ifstream infile(driver_filename);
+}
+
+int Driver::read_driver_file()
+{
+    std::ifstream infile(this->driver_filename);
 
     if(infile.fail())
     {
         std::cerr << "Failed to open driver file" << std::endl;
-        return;
+        return 1;
     }
 
     std::cout << "LOADING DRIVER FILE" << std::endl;
@@ -84,6 +88,8 @@ Driver::Driver(const char *driver_filename)
     camera.print();
     for(LightSource l : light_sources)
     { l.print(); }
+
+    return 0;
 }
 
 void Driver::apply_model_transformations()
