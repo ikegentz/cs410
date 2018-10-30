@@ -1,4 +1,5 @@
 #include "model.h"
+#include "utils.h"
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -20,13 +21,8 @@ std::string Model::to_string() const
 
 void Model::load_from_str(std::string line)
 {
-    std::string buffer;
-    std::stringstream ss(line);
-
-    // tokenize the line to grab model data
     std::vector<std::string> tokens;
-    while(ss >> buffer)
-        tokens.push_back(buffer);
+    Utils::tokenize_line(line, tokens);
 
     // extract axis-angles
     this->wx = std::stof(tokens.at(1));
@@ -53,7 +49,7 @@ void Model::load_from_str(std::string line)
     std::string material_filename = this->wavefront_filename.substr(0,chop) + ".mtl";
     this->material.load_material(material_filename);
     std::cout << "LOADED " << material_filename << std::endl;
-    //this->material.print();
+    this->material.print();
 }
 
 void Model::create_little_m(const glm::vec3& normalized_w, glm::vec3& m) const

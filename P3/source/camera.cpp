@@ -11,7 +11,7 @@
 void Camera::load_eye(std::string eye_string)
 {
     std::vector<std::string> tokens;
-    utils::tokenize_line(eye_string, tokens);
+    Utils::tokenize_line(eye_string, tokens);
 
     eye = glm::vec3(
             std::stof(tokens.at(1)),
@@ -23,7 +23,7 @@ void Camera::load_eye(std::string eye_string)
 void Camera::load_look(std::string look_string)
 {
     std::vector<std::string> tokens;
-    utils::tokenize_line(look_string, tokens);
+    Utils::tokenize_line(look_string, tokens);
 
     look = glm::vec3(
             std::stof(tokens.at(1)),
@@ -35,7 +35,7 @@ void Camera::load_look(std::string look_string)
 void Camera::load_up(std::string up_string)
 {
     std::vector<std::string> tokens;
-    utils::tokenize_line(up_string, tokens);
+    Utils::tokenize_line(up_string, tokens);
 
     up = glm::vec3(
             std::stof(tokens.at(1)),
@@ -47,7 +47,7 @@ void Camera::load_up(std::string up_string)
 void Camera::load_d(std::string d_string)
 {
     std::vector<std::string> tokens;
-    utils::tokenize_line(d_string, tokens);
+    Utils::tokenize_line(d_string, tokens);
 
     d = std::stof(tokens.at(1));
 }
@@ -55,7 +55,7 @@ void Camera::load_d(std::string d_string)
 void Camera::load_bounds(std::string bounds_string)
 {
     std::vector<std::string> tokens;
-    utils::tokenize_line(bounds_string, tokens);
+    Utils::tokenize_line(bounds_string, tokens);
 
     bounds = glm::vec4(
             std::stof(tokens.at(1)),
@@ -68,7 +68,7 @@ void Camera::load_bounds(std::string bounds_string)
 void Camera::load_res(std::string res_string)
 {
     std::vector<std::string> tokens;
-    utils::tokenize_line(res_string, tokens);
+    Utils::tokenize_line(res_string, tokens);
 
     res = glm::vec2(
             std::stof(tokens.at(1)),
@@ -79,7 +79,7 @@ void Camera::load_res(std::string res_string)
 void Camera::load_ambient(std::string ambient_string)
 {
     std::vector<std::string> tokens;
-    utils::tokenize_line(ambient_string, tokens);
+    Utils::tokenize_line(ambient_string, tokens);
 
     ambient = glm::vec3(
             std::stof(tokens.at(1)),

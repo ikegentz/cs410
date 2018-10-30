@@ -53,7 +53,9 @@ Driver::Driver(const char *driver_filename)
         }
         else if(line.find("sphere") != std::string::npos)
         {
-            //TODO load sphere here!!!
+            Sphere sphere;
+            sphere.load_sphere(line);
+            spheres.push_back(sphere);
         }
         else if(line.find("model") != std::string::npos)
         {

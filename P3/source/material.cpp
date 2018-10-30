@@ -37,7 +37,7 @@ void Material::load_material(std::string filename)
             continue;
 
         std::vector <std::string> tokens;
-        utils::tokenize_line(line, tokens);
+        Utils::tokenize_line(line, tokens);
 
         if(line[0] == '#')
             continue;
@@ -57,6 +57,18 @@ void Material::load_material(std::string filename)
                     std::stof(tokens.at(3))
             );
         }
+        else if(tokens.at(0).find("Ks") != std::string::npos)
+        {
+            ks = glm::vec3(
+                    std::stof(tokens.at(1)),
+                    std::stof(tokens.at(2)),
+                    std::stof(tokens.at(3))
+                    );
+        }
+        else if(tokens.at(0).find("Ni") != std::string::npos)
+        {
+            PHONG = std::stof(tokens.at(1));
+        }
         else
             continue;
     }
@@ -65,6 +77,8 @@ void Material::load_material(std::string filename)
 void Material::print()
 {
     std::cout << "MATERIAL" << "\n" <<
-    "\t" << "Ka: " << glm::to_string(this->ka) << "\n" <<
-    "\t" << "Kd: " << glm::to_string(this->kd) << std::endl;
+    "\tKa: " << glm::to_string(this->ka) << "\n" <<
+    "\tKd: " << glm::to_string(this->kd) << "\n" <<
+    "\tKs: " << glm::to_string(this->ks) << "\n" <<
+    "\tPHONG: " << this->PHONG << std::endl;
 }

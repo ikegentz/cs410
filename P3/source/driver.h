@@ -13,6 +13,7 @@
 #include "camera.h"
 #include "light_source.h"
 #include "image.h"
+#include "sphere.h"
 
 /*
     Loads the driver file and grabs each model's data
@@ -33,6 +34,7 @@ private:
 
     std::vector<Model> models;
     std::vector<LightSource> light_sources;
+    std::vector<Sphere> spheres;
     Camera camera;
     Image image;
 

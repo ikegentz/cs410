@@ -10,7 +10,7 @@
 #include <iostream>
 #include <vector>
 
-namespace utils
+namespace Utils
 {
     static void tokenize_line(std::string line, std::vector<std::string> &tokens)
     {

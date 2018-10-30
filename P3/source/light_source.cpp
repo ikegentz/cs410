@@ -17,7 +17,7 @@ LightSource::LightSource()
 void LightSource::load_light(std::string light_string)
 {
     std::vector<std::string> tokens;
-    utils::tokenize_line(light_string, tokens);
+    Utils::tokenize_line(light_string, tokens);
 
     position = glm::vec3(
             std::stof(tokens.at(1)),
