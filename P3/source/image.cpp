@@ -169,7 +169,7 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
     if(pixel.hit)
     {
         if(pixel.hit_sphere)
-            pixel.rgba = this->color_me_sphere(pt, mat, lights, camera.ambient, the_hit_sphere);
+            pixel.rgba = this->color_me_sphere(pt, mat, lights, camera.ambient, pixel, the_hit_sphere);
         else
             pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient, pixel);
     }
@@ -180,7 +180,7 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
 }
 
 glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, Material &mat, std::vector <LightSource> &lights,
-                                 glm::vec3 ambient, const Sphere& sphere)
+                                 glm::vec3 ambient, const Pixel& pixel, const Sphere& sphere)
 {
     glm::vec3 ptos = intersection_point;
     glm::vec3 snrm = glm::normalize(ptos - sphere.position);
@@ -196,6 +196,15 @@ glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, Material &mat, st
         {
             glm::mat3x3 kds = glm::mat3x3(glm::vec3(mat.kd.x, 0, 0), glm::vec3(0, mat.kd.y, 0), glm::vec3(0, 0, mat.kd.z));
             color += kds * emL * glm::dot(snrm, toL);
+            glm::vec3 toC = glm::normalize(pixel.ray.position - ptos);
+            glm::vec3 spR = (2* glm::dot(snrm, toL) * snrm) - toL;
+            float CdR = glm::dot(toC, spR);
+
+            if(CdR > 0.0f)
+            {
+                glm::mat3x3 kdsS = glm::mat3x3(glm::vec3(mat.ks.x, 0, 0), glm::vec3(0, mat.ks.y, 0), glm::vec3(0, 0, mat.ks.z));
+                color += kdsS * emL * float(pow(CdR, mat.PHONG));
+            }
         }
     }
 
