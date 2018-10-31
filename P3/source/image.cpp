@@ -16,7 +16,7 @@ Image::Image(const glm::vec4 &bounds, const glm::vec2 &res)
     this->res = glm::vec2(res);
 }
 
-void Image::render_image(const Camera &camera, std::vector<Model> &models, std::vector<LightSource> &lights)
+void Image::render_image(const Camera &camera, std::vector<Model> &models, std::vector<Sphere>& spheres, std::vector<LightSource> &lights)
 {
     // create y rows of Pixels with x columns, default Pixel value
     this->pixel_array.resize(this->res.x, std::vector<Pixel>(this->res.y, Pixel()));
@@ -45,7 +45,7 @@ void Image::render_image(const Camera &camera, std::vector<Model> &models, std::
             // set the ray's position and direction for this pixel
             this->pixelPt(row, col, -camera.d, camera.eye, wv, uv, vv);
             // cast this ray to see if it hits anything
-            this->ray_cast(this->pixel_array[row][col], models, lights, camera);
+            this->ray_cast(this->pixel_array[row][col], models, spheres, lights, camera);
 
             //print ASCII image
 //            if(this->pixel_array[row][col].hit)
@@ -80,7 +80,7 @@ void Image::pixelPt(const unsigned i, const unsigned j, const double near,
     ray.set_direction(shoot);
 }
 
-void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<LightSource> &lights, const Camera &camera)
+void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Sphere>& spheres, std::vector<LightSource> &lights, const Camera &camera)
 {
     // loop through all faces in the world (all models)
     Material &mat = models[0].material;
@@ -128,6 +128,44 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Light
             }
         }
     }
+
+    // loop through all spheres
+    for(Sphere sphere : spheres)
+    {
+        glm::vec3 C = sphere.position;
+        glm::vec3 L = pixel.ray.position;
+        glm::vec3 U = pixel.ray.get_direction();
+        glm::vec3 T = C - L;
+
+        float v = glm::dot(T, U);
+        float csq = glm::dot(T, T);
+        float disc = sphere.radius*sphere.radius - (csq - v*v);
+
+
+        float d = 0.0f;
+
+        if(disc > 0)
+        {
+            d = sqrt(disc);
+            glm::vec3 pt = L + U*(v-d);
+            float t_temp = glm::length(pt - L);
+
+
+            if(t_temp < pixel.last_t || !pixel.hit)
+            {
+                pixel.last_t = t_temp;
+                pixel.hit = true;
+
+                //set other things needed for coloring
+                 pixel.rgba = glm::vec4(1.0, 0, 0, 1.0);
+                 return;
+            }
+
+
+
+        }
+    }
+
     if(pixel.hit)
     {
         pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient,
