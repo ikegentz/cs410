@@ -49,7 +49,7 @@ public:
     glm::vec4 color_me(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
                        const Pixel &pixel);
     glm::vec4 color_me_sphere(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
-                       const Pixel &pixel);
+                       const Sphere& sphere);
 };
 
 #endif //CS410_IMAGE_H

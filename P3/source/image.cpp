@@ -131,6 +131,9 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
     }
 
     // loop through all spheres
+    Sphere the_hit_sphere;
+    glm::vec3 pt;
+    float d = 0.0f;
     for(Sphere sphere : spheres)
     {
         glm::vec3 C = sphere.position;
@@ -142,15 +145,12 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
         float csq = glm::dot(T, T);
         float disc = sphere.radius*sphere.radius - (csq - v*v);
 
-
-        float d = 0.0f;
-
         if(disc > 0)
         {
             d = sqrt(disc);
-            glm::vec3 pt = L + U*(v-d);
+            float t = v-d;
+            pt = L + U*t;
             float t_temp = glm::length(pt - L);
-
 
             if(t_temp < pixel.last_t || !pixel.hit)
             {
@@ -161,10 +161,7 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
                 mat.ks = sphere.Ks;
                 mat.kd = sphere.Kd;
                 mat.PHONG = Sphere::PHONG;
-
-                //set other things needed for coloring
-                 pixel.rgba = color_me_sphere(pixel.ray.get_direction()*float(pixel.last_t) + camera.eye, mat, lights, camera.ambient, pixel);
-                 return;
+                the_hit_sphere = sphere;
             }
         }
     }
@@ -172,7 +169,7 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
     if(pixel.hit)
     {
         if(pixel.hit_sphere)
-            pixel.rgba = this->color_me_sphere(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient, pixel);
+            pixel.rgba = this->color_me_sphere(pt, mat, lights, camera.ambient, the_hit_sphere);
         else
             pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient, pixel);
     }
@@ -181,11 +178,30 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
         pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
     }
 }
+
 glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, Material &mat, std::vector <LightSource> &lights,
-                                 glm::vec3 ambient, const Pixel &pixel)
+                                 glm::vec3 ambient, const Sphere& sphere)
 {
-    return glm::vec4(1.0, 1.0, 0.0, 1.0);
+    glm::vec3 ptos = intersection_point;
+    glm::vec3 snrm = glm::normalize(ptos - sphere.position);
+    glm::vec3 color = glm::vec3(ambient.x*mat.ka.x, ambient.y*mat.ka.y, ambient.z*mat.ka.z);
+
+    for(LightSource light : lights)
+    {
+        glm::vec3 ptL = light.position;
+        glm::vec3 emL = light.rgb_amount;
+        glm::vec3 toL = glm::normalize(ptL - ptos);
+
+        if(glm::dot(snrm, toL) > 0.0)
+        {
+            glm::mat3x3 kds = glm::mat3x3(glm::vec3(mat.kd.x, 0, 0), glm::vec3(0, mat.kd.y, 0), glm::vec3(0, 0, mat.kd.z));
+            color += kds * emL * glm::dot(snrm, toL);
+        }
+    }
+
+    return glm::vec4(color.x, color.y, color.z, 1.0);
 }
+
 glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
         const Pixel &pixel)
 {
@@ -212,14 +228,8 @@ glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vect
         if(glm::dot(N, toL) > 0)
             N = -N;
 
-
-        // if test STILL fails, skip to the next light
-        // TODO not sure if we need this, but seems to work fine with it
-        // TODO keeping for efficiency's sake. Remove if stuff quits working
         if(glm::dot(N, toL) > 0)
             continue;
-
-
 
         glm::vec3 L;
         // get direction to light source
