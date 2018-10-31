@@ -146,11 +146,31 @@ glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vect
     // 2 edges of the triangle (face)
     glm::vec3 E1 = pixel.Bv - pixel.Av;
     glm::vec3 E2 = pixel.Cv - pixel.Av;
-    // calculate surface normal
+
+    // calculate an initial surface normal, might get flipped down below
     glm::vec3 N = glm::normalize(glm::cross(E1, E2));
+
+    // check if we need to flip
+    glm::vec3 toIntersection = glm::normalize(intersection_point - pixel.ray.position);
+    if(glm::dot(toIntersection, N) > 0)
+        N = -N;
 
     for(LightSource light : lights)
     {
+        // calculate a
+
+
+
+        glm::vec3 toL = glm::normalize(light.position - intersection_point);
+        // check if we have the 'correct' surface normal, or need to flip it
+        // dot product should be negative for 'correct' surface normal
+        if(glm::dot(N, toL) > 0)
+            N = -N;
+        // see if the test STILL fails. In that case, we are truly on the 'backside' of the face, so return black
+        // TODO not sure if we have to do anything here...
+
+
+
         glm::vec3 L;
         // get direction to light source
         if(light.infinity)

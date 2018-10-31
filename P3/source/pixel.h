@@ -24,7 +24,7 @@ public:
     Ray ray;
     glm::vec4 rgba;
 
-    // face vertices we of face we interssect with
+    // face vertices we of face we intersect with
     glm::vec3 Av;
     glm::vec3 Bv;
     glm::vec3 Cv;
