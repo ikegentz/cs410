@@ -48,6 +48,8 @@ public:
     void ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Sphere>& spheres, std::vector<LightSource> &lights, const Camera &camera);
     glm::vec4 color_me(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
                        const Pixel &pixel);
+    glm::vec4 color_me_sphere(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
+                       const Pixel &pixel);
 };
 
 #endif //CS410_IMAGE_H

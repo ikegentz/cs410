@@ -157,7 +157,7 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
                 pixel.hit = true;
 
                 //set other things needed for coloring
-                 pixel.rgba = glm::vec4(1.0, 0, 0, 1.0);
+                 pixel.rgba = color_me_sphere(pixel.ray.get_direction()*float(pixel.last_t) + camera.eye, mat, lights, camera.ambient, pixel);
                  return;
             }
 
@@ -168,15 +168,18 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
 
     if(pixel.hit)
     {
-        pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient,
-                                    pixel);
+        pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient, pixel);
     }
     else
     {
         pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
     }
 }
-
+glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, Material &mat, std::vector <LightSource> &lights,
+                                 glm::vec3 ambient, const Pixel &pixel)
+{
+    return glm::vec4(1.0, 1.0, 0.0, 1.0);
+}
 glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
         const Pixel &pixel)
 {
