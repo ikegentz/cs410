@@ -13,6 +13,8 @@ Material::Material()
 {
     this->ka = glm::vec3(1.0, 1.0, 1.0);
     this->kd = glm::vec3(1.0, 1.0, 1.0);
+    this->ks = glm::vec3(1.0, 1.0, 1.0);
+    this->PHONG = 16;
 }
 
 void Material::load_material(std::string filename)

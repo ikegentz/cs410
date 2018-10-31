@@ -11,6 +11,7 @@ Pixel::Pixel()
     this->hit = false;
     this->rgba = glm::vec4(0,0,0,1);
     this->last_t = -1;
+    this->hit_sphere = false;
 
     Av = glm::vec3(0,0,0);
     Bv = glm::vec3(0,0,0);

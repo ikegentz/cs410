@@ -83,7 +83,7 @@ void Image::pixelPt(const unsigned i, const unsigned j, const double near,
 void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Sphere>& spheres, std::vector<LightSource> &lights, const Camera &camera)
 {
     // loop through all faces in the world (all models)
-    Material &mat = models[0].material;
+    Material mat;
     glm::vec3 Av, Bv, Cv;
     for(Model m : models)
     {
@@ -120,6 +120,7 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
                 {
                     pixel.last_t = t;
                     pixel.hit = true;
+                    pixel.hit_sphere = false;
                     mat = m.material;
                     pixel.Av = Av;
                     pixel.Bv = Bv;
@@ -155,20 +156,25 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
             {
                 pixel.last_t = t_temp;
                 pixel.hit = true;
+                pixel.hit_sphere = true;
+                mat.ka = sphere.Ka;
+                mat.ks = sphere.Ks;
+                mat.kd = sphere.Kd;
+                mat.PHONG = Sphere::PHONG;
 
                 //set other things needed for coloring
                  pixel.rgba = color_me_sphere(pixel.ray.get_direction()*float(pixel.last_t) + camera.eye, mat, lights, camera.ambient, pixel);
                  return;
             }
-
-
-
         }
     }
 
     if(pixel.hit)
     {
-        pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient, pixel);
+        if(pixel.hit_sphere)
+            pixel.rgba = this->color_me_sphere(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient, pixel);
+        else
+            pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient, pixel);
     }
     else
     {

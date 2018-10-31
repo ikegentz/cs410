@@ -20,6 +20,9 @@ public:
     double last_t;
     // did we hit anything?
     bool hit;
+    // did we hit a sphere?
+    bool hit_sphere;
+
     // the ray we shoot from the image plane into the scene
     Ray ray;
     glm::vec4 rgba;
