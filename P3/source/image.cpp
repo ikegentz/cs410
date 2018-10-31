@@ -159,15 +159,18 @@ glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vect
     {
         // calculate a
 
-
-
         glm::vec3 toL = glm::normalize(light.position - intersection_point);
         // check if we have the 'correct' surface normal, or need to flip it
         // dot product should be negative for 'correct' surface normal
         if(glm::dot(N, toL) > 0)
             N = -N;
-        // see if the test STILL fails. In that case, we are truly on the 'backside' of the face, so return black
-        // TODO not sure if we have to do anything here...
+
+
+        // if test STILL fails, skip to the next light
+        // TODO not sure if we need this, but seems to work fine with it
+        // TODO keeping for efficiency's sake. Remove if stuff quits working
+        if(glm::dot(N, toL) > 0)
+            continue;
 
 
 
