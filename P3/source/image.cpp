@@ -134,6 +134,7 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
     Sphere the_hit_sphere;
     glm::vec3 pt;
     float d = 0.0f;
+    int count = 0;
     for(Sphere sphere : spheres)
     {
         glm::vec3 C = sphere.position;
@@ -151,8 +152,9 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
             float t = v-d;
             pt = L + U*t;
             float t_temp = glm::length(pt - L);
+            ++count;
 
-            if(t_temp < pixel.last_t || !pixel.hit)
+            if(t_temp < pixel.last_t || pixel.hit == false)
             {
                 pixel.last_t = t_temp;
                 pixel.hit = true;
@@ -162,12 +164,15 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
                 mat.kd = sphere.Kd;
                 mat.PHONG = Sphere::PHONG;
                 the_hit_sphere = sphere;
+                goto skipCircle;
             }
         }
     }
-
+    skipCircle:;
     if(pixel.hit)
     {
+        if(count > 1)
+            std::cout << "COUNT: " << count << std::endl;
         if(pixel.hit_sphere)
             pixel.rgba = this->color_me_sphere(pt, mat, lights, camera.ambient, pixel, the_hit_sphere);
         else
