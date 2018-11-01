@@ -171,7 +171,7 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
         if(pixel.hit_sphere)
             pixel.rgba = this->color_me_sphere(pt, mat, lights, camera.ambient, pixel, the_hit_sphere);
         else
-            pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient, pixel);
+            pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient, pixel, spheres);
     }
     else
     {
@@ -212,7 +212,7 @@ glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, Material &mat, st
 }
 
 glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
-        const Pixel &pixel)
+        const Pixel &pixel, const std::vector<Sphere>& spheres)
 {
     glm::vec3 I = glm::vec3(ambient.x*mat.ka.x, ambient.y*mat.ka.y, ambient.z*mat.ka.z); // get ambient as base light amount
     // 2 edges of the triangle (face)
@@ -227,6 +227,9 @@ glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vect
     if(glm::dot(toIntersection, N) > 0)
         N = -N;
 
+    glm::vec3 diffuse;
+    glm::mat3x3 kds;
+
     for(LightSource light : lights)
     {
         // calculate a
@@ -240,20 +243,55 @@ glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vect
         if(glm::dot(N, toL) > 0)
             continue;
 
-        glm::vec3 L;
+        glm::vec3 shadow_intersec_point = pixel.ray.position + pixel.ray.get_direction() * float(pixel.last_t);
+        glm::vec3 Lray;
+        glm::vec3 fixed_light_position;
+
         // get direction to light source
         if(light.infinity)
         {
-            L = glm::normalize(light.position * 1000000.0f - intersection_point);
+            Lray = glm::normalize(light.position * 1000000.0f - intersection_point);
+            fixed_light_position = light.position * 10000000.0f - shadow_intersec_point;
         }
         else
         {
-            L = glm::normalize(light.position - intersection_point);
+            Lray = glm::normalize(light.position - intersection_point);
+            fixed_light_position = light.position - shadow_intersec_point;
         }
+
+        // check for sphere shadows
+        if(pixel.last_t >= 0.0001f)
+        {
+            for (Sphere sphere : spheres)
+            {
+                glm::vec3 C = sphere.position;
+                glm::vec3 L = shadow_intersec_point;
+                glm::vec3 U = glm::normalize(fixed_light_position - L);
+
+                float v = glm::dot(C - L, U);
+                float c = glm::length(C - L);
+                float r = sphere.radius;
+                float dsq = r * r - (c * c - v * v);
+
+                if (dsq >= 0)
+                {
+                    float d = sqrt(dsq);
+                    float t = v-d;
+
+                    if(t > 0)
+                        goto nextLight;
+                }
+            }
+        }
+        ////end shadow checks
+
+
         // Idiffuse = KdB(N dot L)
-        glm::mat3x3 kds = glm::mat3x3(glm::vec3(mat.kd.x, 0, 0), glm::vec3(0, mat.kd.y, 0), glm::vec3(0,0,mat.kd.z));
-        glm::vec3 diffuse = kds * light.rgb_amount * (glm::dot(N, -L)); // this is positive in the slides but.. this makes it work so idk :/
+        kds = glm::mat3x3(glm::vec3(mat.kd.x, 0, 0), glm::vec3(0, mat.kd.y, 0), glm::vec3(0,0,mat.kd.z));
+        diffuse = kds * light.rgb_amount * (glm::dot(N, -Lray)); // this is positive in the slides but.. this makes it work so idk :/
         I = I + diffuse;
+
+        nextLight:;
     }
 
     return glm::vec4(I.x, I.y, I.z, 1.0);

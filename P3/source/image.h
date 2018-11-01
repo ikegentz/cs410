@@ -47,7 +47,7 @@ public:
     // takes a pixel (containing the ray), and sets the pixels RGB and hit
     void ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Sphere>& spheres, std::vector<LightSource> &lights, const Camera &camera);
     glm::vec4 color_me(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
-                       const Pixel &pixel);
+                       const Pixel &pixel,const std::vector<Sphere>& spheres);
     glm::vec4 color_me_sphere(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
                        const Pixel& pixel, const Sphere& sphere);
 };
