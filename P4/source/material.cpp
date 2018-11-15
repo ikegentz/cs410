@@ -14,6 +14,7 @@ Material::Material()
     this->ka = glm::vec3(1.0, 1.0, 1.0);
     this->kd = glm::vec3(1.0, 1.0, 1.0);
     this->ks = glm::vec3(1.0, 1.0, 1.0);
+    this->kr = glm::vec3(1.0, 1.0, 1.0);
     this->PHONG = 16;
 }
 
@@ -22,6 +23,7 @@ Material::Material(const Material& mat)
     this->ka = mat.ka;
     this->kd = mat.kd;
     this->ks = mat.ks;
+    this->kr = mat.kr;
     this->PHONG = mat.PHONG;
 }
 
@@ -90,5 +92,6 @@ void Material::print()
     "\tKa: " << glm::to_string(this->ka) << "\n" <<
     "\tKd: " << glm::to_string(this->kd) << "\n" <<
     "\tKs: " << glm::to_string(this->ks) << "\n" <<
+    "\tKr: " << glm::to_string(this->kr) << "\n" <<
     "\tPHONG: " << this->PHONG << std::endl;
 }

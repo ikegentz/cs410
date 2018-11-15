@@ -13,20 +13,19 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtx/transform.hpp"
+#include "material.h"
 
 
 class Sphere
 {
 public:
+    Sphere();
     void load_sphere(std::string line);
     void print();
 
     glm::vec3 position;
     float radius;
-    glm::vec3 Ka;
-    glm::vec3 Kd;
-    glm::vec3 Ks;
-    glm::vec3 Kr;
+    Material material;
     static constexpr float PHONG = 16;
 private:
 };

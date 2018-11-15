@@ -19,7 +19,7 @@ class Material
 public:
     Material();
     Material(const Material& mat);
-    glm::vec3 ka, kd, ks;
+    glm::vec3 ka, kd, ks, kr;
     float PHONG;
     void load_material(std::string filename);
     void print();
