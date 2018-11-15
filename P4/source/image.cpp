@@ -10,13 +10,14 @@ Image::Image()
     this->res = glm::vec2(16, 16);
 }
 
-Image::Image(const glm::vec4 &bounds, const glm::vec2 &res)
+Image::Image(RaytracerData* data_)
 {
-    this->bounds = glm::vec4(bounds);
-    this->res = glm::vec2(res);
+    this->data = data_;
+    this->bounds = glm::vec4(data->camera.bounds);
+    this->res = glm::vec2(data->camera.res);
 }
 
-void Image::render_image(const Camera &camera, std::vector<Model> &models, std::vector<Sphere>& spheres, std::vector<LightSource> &lights)
+void Image::render_image()
 {
     // create y rows of Pixels with x columns, default Pixel value
     this->pixel_array.resize(this->res.x, std::vector<Pixel>(this->res.y, Pixel()));
@@ -30,9 +31,9 @@ void Image::render_image(const Camera &camera, std::vector<Model> &models, std::
 
     std::cout << "left: " << left << ", bottom: " << bottom << ", right: " << right << ", top: " << top<< std::endl;
 
-    glm::vec3 wv = camera.eye - camera.look;
+    glm::vec3 wv = data->camera.eye - data->camera.look;
     wv = glm::normalize(wv);
-    glm::vec3 uv = glm::cross(camera.up, wv);
+    glm::vec3 uv = glm::cross(data->camera.up, wv);
     uv = glm::normalize(uv);
     glm::vec3 vv = glm::cross(wv, uv);
     vv = glm::normalize(vv);
@@ -43,9 +44,9 @@ void Image::render_image(const Camera &camera, std::vector<Model> &models, std::
         for(unsigned col = 0; col < this->res.y; ++col)
         {
             // set the ray's position and direction for this pixel
-            this->pixelPt(row, col, -camera.d, camera.eye, wv, uv, vv);
+            this->pixelPt(row, col, -data->camera.d, data->camera.eye, wv, uv, vv);
             // cast this ray to see if it hits anything
-            this->ray_cast(this->pixel_array[row][col], models, spheres, lights, camera);
+            this->ray_cast(this->pixel_array[row][col]);
 
             //print ASCII image
 //            if(this->pixel_array[row][col].hit)
@@ -80,12 +81,12 @@ void Image::pixelPt(const unsigned i, const unsigned j, const double near,
     ray.set_direction(shoot);
 }
 
-void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Sphere>& spheres, std::vector<LightSource> &lights, const Camera &camera)
+void Image::ray_cast(Pixel &pixel)
 {
     // loop through all faces in the world (all models)
     Material mat;
     glm::vec3 Av, Bv, Cv;
-    for(Model m : models)
+    for(Model m : data->models)
     {
         // get vertices so we can use face indices
         std::vector<Vertex> verts = m.obj.vertices;
@@ -135,7 +136,7 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
     glm::vec3 pt;
     float d = 0.0f;
     int count = 0;
-    for(Sphere sphere : spheres)
+    for(Sphere sphere : data->spheres)
     {
         glm::vec3 C = sphere.position;
         glm::vec3 L = pixel.ray.position;
@@ -174,9 +175,9 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
         if(count > 1)
             std::cout << "COUNT: " << count << std::endl;
         if(pixel.hit_sphere)
-            pixel.rgba = this->color_me_sphere(pt, mat, lights, camera.ambient, pixel, the_hit_sphere);
+            pixel.rgba = this->color_me_sphere(pt, mat, pixel, the_hit_sphere);
         else
-            pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + camera.eye, mat, lights, camera.ambient, pixel, spheres);
+            pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + data->camera.eye, mat, pixel);
     }
     else
     {
@@ -184,14 +185,13 @@ void Image::ray_cast(Pixel &pixel, std::vector<Model> &models, std::vector<Spher
     }
 }
 
-glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, Material &mat, std::vector <LightSource> &lights,
-                                 glm::vec3 ambient, const Pixel& pixel, const Sphere& sphere)
+glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, Material &mat, const Pixel& pixel, const Sphere& sphere)
 {
     glm::vec3 ptos = intersection_point;
     glm::vec3 snrm = glm::normalize(ptos - sphere.position);
-    glm::vec3 color = glm::vec3(ambient.x*mat.ka.x, ambient.y*mat.ka.y, ambient.z*mat.ka.z);
+    glm::vec3 color = glm::vec3(data->camera.ambient.x*mat.ka.x, data->camera.ambient.y*mat.ka.y, data->camera.ambient.z*mat.ka.z);
 
-    for(LightSource light : lights)
+    for(LightSource light : data->light_sources)
     {
         glm::vec3 ptL = light.position;
         glm::vec3 emL = light.rgb_amount;
@@ -216,10 +216,9 @@ glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, Material &mat, st
     return glm::vec4(color.x, color.y, color.z, 1.0);
 }
 
-glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vector<LightSource> &lights, glm::vec3 ambient,
-        const Pixel &pixel, const std::vector<Sphere>& spheres)
+glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, const Pixel &pixel)
 {
-    glm::vec3 I = glm::vec3(ambient.x*mat.ka.x, ambient.y*mat.ka.y, ambient.z*mat.ka.z); // get ambient as base light amount
+    glm::vec3 I = glm::vec3(data->camera.ambient.x*mat.ka.x, data->camera.ambient.y*mat.ka.y, data->camera.ambient.z*mat.ka.z); // get ambient as base light amount
     // 2 edges of the triangle (face)
     glm::vec3 E1 = pixel.Bv - pixel.Av;
     glm::vec3 E2 = pixel.Cv - pixel.Av;
@@ -235,7 +234,7 @@ glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vect
     glm::vec3 diffuse;
     glm::mat3x3 kds;
 
-    for(LightSource light : lights)
+    for(LightSource light : data->light_sources)
     {
         // calculate a
 
@@ -267,7 +266,7 @@ glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, std::vect
         // check for sphere shadows
         if(pixel.last_t >= 0.0001f)
         {
-            for (Sphere sphere : spheres)
+            for (Sphere sphere : data->spheres)
             {
                 glm::vec3 C = sphere.position;
                 glm::vec3 L = shadow_intersec_point;

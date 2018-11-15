@@ -13,12 +13,13 @@
 #include "utils.h"
 
 
-Raytracer::Driver::Driver(const char *driver_filename) : recurse_depth(0)
+Driver::Driver(const char *driver_filename, RaytracerData* data_) : recurse_depth(0)
 {
     this->driver_filename = driver_filename;
+    this->data = data_;
 }
 
-int Raytracer::Driver::read_driver_file()
+int Driver::read_driver_file()
 {
     std::ifstream infile(this->driver_filename);
 
@@ -37,15 +38,15 @@ int Raytracer::Driver::read_driver_file()
             continue;
         else if(line.find("eye") != std::string::npos)
         {
-            camera.load_eye(line);
+            data->camera.load_eye(line);
         }
         else if(line.find("look") != std::string::npos)
         {
-            camera.load_look(line);
+            data->camera.load_look(line);
         }
         else if(line.find("bounds") != std::string::npos)
         {
-            camera.load_bounds(line);
+            data->camera.load_bounds(line);
         }
         else if(line.find("recursionLevel") != std::string::npos)
         {
@@ -55,72 +56,58 @@ int Raytracer::Driver::read_driver_file()
         }
         else if(line.find("ambient") != std::string::npos)
         {
-            camera.load_ambient(line);
+            data->camera.load_ambient(line);
         }
         else if(line.find("light") != std::string::npos)
         {
             LightSource light;
             light.load_light(line);
-            light_sources.push_back(light);
+            data->light_sources.push_back(light);
         }
         else if(line.find("sphere") != std::string::npos)
         {
             Sphere sphere;
             sphere.load_sphere(line);
-            spheres.push_back(sphere);
+            data->spheres.push_back(sphere);
         }
         else if(line.find("model") != std::string::npos)
         {
             Model model;
             // this also loads the wavefront file for the model transformation
             model.load_from_str(line);
-            this->models.push_back(model);
+            data->models.push_back(model);
         }
         else if(line.find("up") != std::string::npos)
         {
-            camera.load_up(line);
+            data->camera.load_up(line);
         }
         else if(line.find("res") != std::string::npos)
         {
-            camera.load_res(line);
+            data->camera.load_res(line);
         }
         else if(line.find("d ") != std::string::npos)
         {
-            camera.load_d(line);
+            data->camera.load_d(line);
         }
     }
-
-    image = Image(this->camera.bounds, this->camera.res);
-
-    // Print out what we loaded for quick debugging
-    camera.print();
-    for(LightSource l : light_sources)
-    { l.print(); }
 
     return 0;
 }
 
-void Raytracer::Driver::apply_model_transformations()
+void Driver::apply_model_transformations()
 {
     std::cout << "APPLYING MODEL TRANSFORMATIONS" << std::endl;
 
     unsigned i;
-    for(i = 0; i < this->models.size(); ++i)
+    for(i = 0; i < data->models.size(); ++i)
     {
-        this->models.at(i).build_transformation_matrix();
-        this->models.at(i).apply_transformation_matrix();
+        data->models.at(i).build_transformation_matrix();
+        data->models.at(i).apply_transformation_matrix();
         // mutliply verts by the matrix
     }
 
     std::cout << i << " MODELS TRANSFORMED" << std::endl;
-    for(Model m : models)
+    for(Model m : data->models)
     { std::cout << m.to_string() << std::endl; }
-}
-
-void Raytracer::Driver::generate_image(const char* filename)
-{
-    this->image.render_image(this->camera, this->models, this->spheres, this->light_sources);
-    std::cout << "WRITING " << filename << std::endl;
-    this->image.write_image(filename);
 }
 
