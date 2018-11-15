@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     }
 
     const char* driver_filename = argv[1];
-    Driver driver(driver_filename);
+    Raytracer::Driver driver(driver_filename);
     if(driver.read_driver_file() != 0)
     {
         std::cerr << "Failed while trying to parse driver file" << std::endl;
