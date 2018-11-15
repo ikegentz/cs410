@@ -46,15 +46,8 @@ void Image::render_image(const Camera &camera, std::vector<Model> &models, std::
             this->pixelPt(row, col, -camera.d, camera.eye, wv, uv, vv);
             // cast this ray to see if it hits anything
             this->ray_cast(this->pixel_array[row][col], models, lights, camera);
-
-            //print ASCII image
-//            if(this->pixel_array[row][col].hit)
-//                std::cout << " # ";
-//            else
-//                std::cout << " ' ";
         }
-        // used for printing ASCII picture
-        //std::cout << std::endl;
+
     }
 
 }
