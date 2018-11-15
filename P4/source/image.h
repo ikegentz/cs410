@@ -48,9 +48,10 @@ public:
                         const glm::vec3 &eye, const glm::vec3 &wv, const glm::vec3 &uv, const glm::vec3 &vv);
     void process_pixel(Pixel &pixel);
     std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int>  ray_cast_model(const Ray& ray);
+    std::tuple<bool, double, int, glm::vec3> ray_cast_sphere(const Ray& ray);
 
     glm::vec4 color_me(glm::vec3 intersection_point, Material &mat, const Pixel &pixel);
-    glm::vec4 color_me_sphere(glm::vec3 intersection_point, Material &mat, const Pixel& pixel, const Sphere& sphere);
+    glm::vec4 color_me_sphere(glm::vec3 intersection_point, const Pixel& pixel, const Sphere& sphere);
     void write_image(const char* filename) const;
     unsigned bound_rgb(double in_color) const;
 

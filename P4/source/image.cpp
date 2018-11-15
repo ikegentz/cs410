@@ -76,7 +76,7 @@ void Image::pixelPt(const unsigned i, const unsigned j, const double near,
 std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> Image::ray_cast_model(const Ray& ray)
 {
     glm::vec3 retAv, retBv, retCv;
-    int model_index, i = 0;
+    int model_index = 0, i = 0;
     bool hit = false;
     double last_t = -1;
 
@@ -134,6 +134,48 @@ std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> Image::ray_cast_m
 
 }
 
+//        hit?  where  sphere_index  pt
+std::tuple<bool, double, int, glm::vec3> Image::ray_cast_sphere(const Ray& ray)
+{
+    // loop through all spheres
+    float d = 0.0f;
+    bool hit = false;
+    int count = 0, sphere_index = 0;
+    double last_t = -1;
+    glm::vec3 pt;
+
+    for(Sphere sphere : data->spheres)
+    {
+        glm::vec3 C = sphere.position;
+        glm::vec3 L = ray.position;
+        glm::vec3 U = ray.get_direction();
+        glm::vec3 T = C - L;
+
+        float v = glm::dot(T, U);
+        float csq = glm::dot(T, T);
+        float disc = sphere.radius*sphere.radius - (csq - v*v);
+
+        if(disc > 0)
+        {
+            d = sqrt(disc);
+            float t = v-d;
+            pt = L + U*t;
+            float t_temp = glm::length(pt - L);
+
+            if(t_temp < last_t || !hit)
+            {
+                last_t = t_temp;
+                hit = true;
+                sphere_index = count;
+                goto skipCircle;
+            }
+        }
+        ++count;
+    }
+    skipCircle:;
+    return std::make_tuple(hit, last_t, sphere_index, pt);
+}
+
 void Image::process_pixel(Pixel &pixel)
 {
 
@@ -151,51 +193,33 @@ void Image::process_pixel(Pixel &pixel)
         mat = data->models[std::get<5>(cast_results)].material;
     }
 
-    // loop through all spheres
+
+
+
+    // UNDER CONSTRUCTION
+
     Sphere the_hit_sphere;
     glm::vec3 pt;
-    float d = 0.0f;
-    int count = 0;
-    for(Sphere sphere : data->spheres)
+    std::tuple<bool, double, int, glm::vec3> cast_results_sphere = ray_cast_sphere(pixel.ray);
+
+    if(std::get<0>(cast_results_sphere) == true)
     {
-        glm::vec3 C = sphere.position;
-        glm::vec3 L = pixel.ray.position;
-        glm::vec3 U = pixel.ray.get_direction();
-        glm::vec3 T = C - L;
-
-        float v = glm::dot(T, U);
-        float csq = glm::dot(T, T);
-        float disc = sphere.radius*sphere.radius - (csq - v*v);
-
-        if(disc > 0)
-        {
-            d = sqrt(disc);
-            float t = v-d;
-            pt = L + U*t;
-            float t_temp = glm::length(pt - L);
-            ++count;
-
-            if(t_temp < pixel.last_t || pixel.hit == false)
-            {
-                pixel.last_t = t_temp;
-                pixel.hit = true;
-                pixel.hit_sphere = true;
-                mat.ka = sphere.Ka;
-                mat.ks = sphere.Ks;
-                mat.kd = sphere.Kd;
-                mat.PHONG = Sphere::PHONG;
-                the_hit_sphere = sphere;
-                goto skipCircle;
-            }
-        }
+        pixel.hit = true;
+        pixel.hit_sphere = true;
+        pixel.last_t = std::get<1>(cast_results_sphere);
+        the_hit_sphere = data->spheres[std::get<2>(cast_results_sphere)];
+        pt = std::get<3>(cast_results_sphere);
     }
-    skipCircle:;
+
+
+    // END UNDER CONSTRUCTION
+
+
+
     if(pixel.hit)
     {
-        if(count > 1)
-            std::cout << "COUNT: " << count << std::endl;
         if(pixel.hit_sphere)
-            pixel.rgba = this->color_me_sphere(pt, mat, pixel, the_hit_sphere);
+            pixel.rgba = this->color_me_sphere(pt, pixel, the_hit_sphere);
         else
             pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + data->camera.eye, mat, pixel);
     }
@@ -205,10 +229,11 @@ void Image::process_pixel(Pixel &pixel)
     }
 }
 
-glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, Material &mat, const Pixel& pixel, const Sphere& sphere)
+glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, const Pixel& pixel, const Sphere& sphere)
 {
     glm::vec3 ptos = intersection_point;
     glm::vec3 snrm = glm::normalize(ptos - sphere.position);
+    Material mat = sphere.material;
     glm::vec3 color = glm::vec3(data->camera.ambient.x*mat.ka.x, data->camera.ambient.y*mat.ka.y, data->camera.ambient.z*mat.ka.z);
 
     for(LightSource light : data->light_sources)
