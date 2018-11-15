@@ -25,8 +25,6 @@ public:
     Driver(const char* driver_filename);
     int read_driver_file();
     void apply_model_transformations();
-    void create_output_directory();
-    void write_results();
     void generate_image(const char* filename);
 
 private:
