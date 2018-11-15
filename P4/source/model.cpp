@@ -6,7 +6,7 @@
 #include <cmath>
 #include <math.h>
 
-Model::Model() : transformation_matrix(glm::mat4(1.0f)) {}
+Model::Model() : transformation_matrix(glm::mat4(1.0f)), smooth(false) {}
 
 std::string Model::to_string() const
 {
@@ -36,6 +36,10 @@ void Model::load_from_str(std::string line)
     this->tx = std::stof(tokens.at(6));
     this->ty = std::stof(tokens.at(7));
     this->tz = std::stof(tokens.at(8));
+    // should we smooth?
+    this->smooth = tokens.at(9).compare("smooth") == 0;
+    std::cout << "SMOOTH: " << smooth << std::endl;
+
     // extract wavefront filename
     this->wavefront_filename = tokens.at(tokens.size()-1);
 
@@ -44,9 +48,6 @@ void Model::load_from_str(std::string line)
     std::cout << "LOADED " << this->wavefront_filename << std::endl;
     //this->obj.print();
 
-    //load material properties
-//    unsigned chop = this->wavefront_filename.find_last_of(".");
-//    std::string material_filename = this->wavefront_filename.substr(0,chop) + ".mtl";
     this->material.load_material(mat_name);
     std::cout << "LOADED " << mat_name << std::endl;
     this->material.print();

@@ -11,7 +11,7 @@
 
 #include "driver.h"
 
-Driver::Driver(const char *driver_filename)
+Driver::Driver(const char *driver_filename) : recurse_depth(0)
 {
     this->driver_filename = driver_filename;
 }
@@ -44,6 +44,12 @@ int Driver::read_driver_file()
         else if(line.find("bounds") != std::string::npos)
         {
             camera.load_bounds(line);
+        }
+        else if(line.find("recursionLevel") != std::string::npos)
+        {
+            std::vector<std::string> tokens;
+            Utils::tokenize_line(line, tokens);
+            this->recurse_depth = std::stoi(tokens[1]);
         }
         else if(line.find("ambient") != std::string::npos)
         {

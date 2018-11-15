@@ -32,6 +32,7 @@ public:
     WavefrontObj obj;
     Material material;
     glm::mat4 transformation_matrix;
+    bool smooth;
 
     Model();
     std::string to_string() const;

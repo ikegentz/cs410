@@ -13,6 +13,7 @@
 #include "camera.h"
 #include "light_source.h"
 #include "image.h"
+#include "utils.h"
 #include "sphere.h"
 
 /*
@@ -32,6 +33,7 @@ private:
     std::unordered_map<std::string, WavefrontObj> wavefronts;
     const char* driver_filename;
     std::string output_dir;
+    unsigned recurse_depth;
 
     std::vector<Model> models;
     std::vector<LightSource> light_sources;
