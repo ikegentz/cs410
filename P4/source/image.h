@@ -30,6 +30,8 @@
 #include "sphere.h"
 #include "raytracer_data.h"
 
+#include <tuple>
+
 
 class Image
 {
@@ -45,7 +47,7 @@ public:
     void pixelPt(const unsigned i, const unsigned j, const double near,
                         const glm::vec3 &eye, const glm::vec3 &wv, const glm::vec3 &uv, const glm::vec3 &vv);
     void process_pixel(Pixel &pixel);
-    std::pair<bool, int> ray_cast_model(const Ray& ray);
+    std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int>  ray_cast_model(const Ray& ray);
 
     glm::vec4 color_me(glm::vec3 intersection_point, Material &mat, const Pixel &pixel);
     glm::vec4 color_me_sphere(glm::vec3 intersection_point, Material &mat, const Pixel& pixel, const Sphere& sphere);

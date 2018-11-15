@@ -73,47 +73,49 @@ void Image::pixelPt(const unsigned i, const unsigned j, const double near,
 }
 
 //        hit? where?  Av        Bv          Cv      model_index
-std::tuple<bool, int, glm::vec3, glm::vec3, glm::vec3, int> Image::ray_cast_model(const Ray& ray)
+std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> Image::ray_cast_model(const Ray& ray)
 {
-    // loop through all faces in the world (all models)
-    glm::vec3 Av, Bv, Cv;
-    int model_index, i = 0;
-    double last_t = -1;
     glm::vec3 retAv, retBv, retCv;
+    int model_index, i = 0;
+    bool hit = false;
+    double last_t = -1;
+
     for(Model m : data->models)
     {
         // get vertices so we can use face indices
-        std::vector<Vertex> verts = m.obj.vertices;
+        std::vector <Vertex> verts = m.obj.vertices;
         // get each face in the object
-        for(unsigned face_index = 0; face_index < m.obj.faces.size(); ++face_index)
+        for (unsigned face_index = 0; face_index < m.obj.faces.size(); ++face_index)
         {
             Face f = m.obj.faces[face_index];
-            Vertex A = verts[f.v1-1];
-            Vertex B = verts[f.v2-1];
-            Vertex C = verts[f.v3-1];
+            Vertex A = verts[f.v1 - 1];
+            Vertex B = verts[f.v2 - 1];
+            Vertex C = verts[f.v3 - 1];
 
-            Av = glm::vec3(A.x, A.y, A.z);
-            Bv = glm::vec3(B.x, B.y, B.z);
-            Cv = glm::vec3(C.x, C.y, C.z);
+            glm::vec3 Av = glm::vec3(A.x, A.y, A.z);
+            glm::vec3 Bv = glm::vec3(B.x, B.y, B.z);
+            glm::vec3 Cv = glm::vec3(C.x, C.y, C.z);
 
             glm::vec3 Lv = ray.position;
             glm::vec3 Dv = ray.get_direction();
 
-            glm::mat3x3 M = glm::mat3x3(Av-Bv, Av-Cv, Dv);
-            glm::mat3x3 M1 = glm::mat3x3(Av-Lv, Av-Cv, Dv);
-            glm::mat3x3 M2 = glm::mat3x3(Av-Bv, Av-Lv, Dv);
-            glm::mat3x3 M3 = glm::mat3x3(Av-Bv, Av-Cv,Av-Lv);
+            glm::mat3x3 M = glm::mat3x3(Av - Bv, Av - Cv, Dv);
+            glm::mat3x3 M1 = glm::mat3x3(Av - Lv, Av - Cv, Dv);
+            glm::mat3x3 M2 = glm::mat3x3(Av - Bv, Av - Lv, Dv);
+            glm::mat3x3 M3 = glm::mat3x3(Av - Bv, Av - Cv, Av - Lv);
 
             double detM = glm::determinant(M);
             double beta = glm::determinant(M1) / detM;
             double gamma = glm::determinant(M2) / detM;
             double t = glm::determinant(M3) / detM;
 
-            if(beta >= 0.0 && gamma >= 0.0 && beta+gamma <= 1.0 && t > 0.0)
+
+            if (beta >= 0.0 && gamma >= 0.0 && beta + gamma <= 1.0 && t > 0.0)
             {
-                if(t < last_t || last_t < 0)
+                if (t < last_t || !hit)
                 {
                     last_t = t;
+                    hit = true;
                     retAv = Av;
                     retBv = Bv;
                     retCv = Cv;
@@ -121,63 +123,32 @@ std::tuple<bool, int, glm::vec3, glm::vec3, glm::vec3, int> Image::ray_cast_mode
                 }
             }
         }
-        i++;
+        ++i;
     }
 
-    if(last_t >= 0)
+    if(hit)
         return std::make_tuple(true, last_t, retAv, retBv, retCv, model_index);
     else
         return std::make_tuple(false, -1, retAv, retBv, retCv, model_index);
+
+
 }
 
 void Image::process_pixel(Pixel &pixel)
 {
-    // loop through all faces in the world (all models)
+
     Material mat;
-    glm::vec3 Av, Bv, Cv;
-    for(Model m : data->models)
+    std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> cast_results = ray_cast_model(pixel.ray);
+
+    if(std::get<0>(cast_results) == true)
     {
-        // get vertices so we can use face indices
-        std::vector<Vertex> verts = m.obj.vertices;
-        // get each face in the object
-        for(unsigned face_index = 0; face_index < m.obj.faces.size(); ++face_index)
-        {
-            Face f = m.obj.faces[face_index];
-            Vertex A = verts[f.v1-1];
-            Vertex B = verts[f.v2-1];
-            Vertex C = verts[f.v3-1];
-
-            Av = glm::vec3(A.x, A.y, A.z);
-            Bv = glm::vec3(B.x, B.y, B.z);
-            Cv = glm::vec3(C.x, C.y, C.z);
-
-            glm::vec3 Lv = pixel.ray.position;
-            glm::vec3 Dv = pixel.ray.get_direction();
-
-            glm::mat3x3 M = glm::mat3x3(Av-Bv, Av-Cv, Dv);
-            glm::mat3x3 M1 = glm::mat3x3(Av-Lv, Av-Cv, Dv);
-            glm::mat3x3 M2 = glm::mat3x3(Av-Bv, Av-Lv, Dv);
-            glm::mat3x3 M3 = glm::mat3x3(Av-Bv, Av-Cv,Av-Lv);
-
-            double detM = glm::determinant(M);
-            double beta = glm::determinant(M1) / detM;
-            double gamma = glm::determinant(M2) / detM;
-            double t = glm::determinant(M3) / detM;
-
-            if(beta >= 0.0 && gamma >= 0.0 && beta+gamma <= 1.0 && t > 0.0)
-            {
-                if(t < pixel.last_t || !pixel.hit)
-                {
-                    pixel.last_t = t;
-                    pixel.hit = true;
-                    pixel.hit_sphere = false;
-                    mat = m.material;
-                    pixel.Av = Av;
-                    pixel.Bv = Bv;
-                    pixel.Cv = Cv;
-                }
-            }
-        }
+        pixel.last_t = std::get<1>(cast_results);
+        pixel.hit = true;
+        pixel.hit_sphere = false;
+        pixel.Av = std::get<2>(cast_results);
+        pixel.Bv = std::get<3>(cast_results);
+        pixel.Cv = std::get<4>(cast_results);
+        mat = data->models[std::get<5>(cast_results)].material;
     }
 
     // loop through all spheres
