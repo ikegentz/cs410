@@ -47,17 +47,8 @@ void Image::render_image()
             this->pixelPt(row, col, -data->camera.d, data->camera.eye, wv, uv, vv);
             // cast this ray to see if it hits anything
             this->ray_cast(this->pixel_array[row][col]);
-
-            //print ASCII image
-//            if(this->pixel_array[row][col].hit)
-//                std::cout << " # ";
-//            else
-//                std::cout << " ' ";
         }
-        // used for printing ASCII picture
-        //std::cout << std::endl;
     }
-
 }
 
 void Image::pixelPt(const unsigned i, const unsigned j, const double near,
