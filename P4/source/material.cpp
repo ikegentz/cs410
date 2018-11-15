@@ -17,6 +17,14 @@ Material::Material()
     this->PHONG = 16;
 }
 
+Material::Material(const Material& mat)
+{
+    this->ka = mat.ka;
+    this->kd = mat.kd;
+    this->ks = mat.ks;
+    this->PHONG = mat.PHONG;
+}
+
 void Material::load_material(std::string filename)
 {
     std::ifstream infile(filename);
