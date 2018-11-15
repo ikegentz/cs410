@@ -46,7 +46,7 @@ void Image::render_image()
             // set the ray's position and direction for this pixel
             this->pixelPt(row, col, -data->camera.d, data->camera.eye, wv, uv, vv);
             // cast this ray to see if it hits anything
-            this->ray_cast(this->pixel_array[row][col]);
+            this->process_pixel(this->pixel_array[row][col]);
         }
     }
 }
@@ -72,7 +72,65 @@ void Image::pixelPt(const unsigned i, const unsigned j, const double near,
     ray.set_direction(shoot);
 }
 
-void Image::ray_cast(Pixel &pixel)
+//        hit? where?  Av        Bv          Cv      model_index
+std::tuple<bool, int, glm::vec3, glm::vec3, glm::vec3, int> Image::ray_cast_model(const Ray& ray)
+{
+    // loop through all faces in the world (all models)
+    glm::vec3 Av, Bv, Cv;
+    int model_index, i = 0;
+    double last_t = -1;
+    glm::vec3 retAv, retBv, retCv;
+    for(Model m : data->models)
+    {
+        // get vertices so we can use face indices
+        std::vector<Vertex> verts = m.obj.vertices;
+        // get each face in the object
+        for(unsigned face_index = 0; face_index < m.obj.faces.size(); ++face_index)
+        {
+            Face f = m.obj.faces[face_index];
+            Vertex A = verts[f.v1-1];
+            Vertex B = verts[f.v2-1];
+            Vertex C = verts[f.v3-1];
+
+            Av = glm::vec3(A.x, A.y, A.z);
+            Bv = glm::vec3(B.x, B.y, B.z);
+            Cv = glm::vec3(C.x, C.y, C.z);
+
+            glm::vec3 Lv = ray.position;
+            glm::vec3 Dv = ray.get_direction();
+
+            glm::mat3x3 M = glm::mat3x3(Av-Bv, Av-Cv, Dv);
+            glm::mat3x3 M1 = glm::mat3x3(Av-Lv, Av-Cv, Dv);
+            glm::mat3x3 M2 = glm::mat3x3(Av-Bv, Av-Lv, Dv);
+            glm::mat3x3 M3 = glm::mat3x3(Av-Bv, Av-Cv,Av-Lv);
+
+            double detM = glm::determinant(M);
+            double beta = glm::determinant(M1) / detM;
+            double gamma = glm::determinant(M2) / detM;
+            double t = glm::determinant(M3) / detM;
+
+            if(beta >= 0.0 && gamma >= 0.0 && beta+gamma <= 1.0 && t > 0.0)
+            {
+                if(t < last_t || last_t < 0)
+                {
+                    last_t = t;
+                    retAv = Av;
+                    retBv = Bv;
+                    retCv = Cv;
+                    model_index = i;
+                }
+            }
+        }
+        i++;
+    }
+
+    if(last_t >= 0)
+        return std::make_tuple(true, last_t, retAv, retBv, retCv, model_index);
+    else
+        return std::make_tuple(false, -1, retAv, retBv, retCv, model_index);
+}
+
+void Image::process_pixel(Pixel &pixel)
 {
     // loop through all faces in the world (all models)
     Material mat;
