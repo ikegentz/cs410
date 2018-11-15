@@ -193,11 +193,6 @@ void Image::process_pixel(Pixel &pixel)
         mat = data->models[std::get<5>(cast_results)].material;
     }
 
-
-
-
-    // UNDER CONSTRUCTION
-
     Sphere the_hit_sphere;
     glm::vec3 pt;
     std::tuple<bool, double, int, glm::vec3> cast_results_sphere = ray_cast_sphere(pixel.ray);
@@ -210,11 +205,6 @@ void Image::process_pixel(Pixel &pixel)
         the_hit_sphere = data->spheres[std::get<2>(cast_results_sphere)];
         pt = std::get<3>(cast_results_sphere);
     }
-
-
-    // END UNDER CONSTRUCTION
-
-
 
     if(pixel.hit)
     {
