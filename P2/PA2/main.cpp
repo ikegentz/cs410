@@ -13,6 +13,4 @@ int main(int argc, char** argv)
     Driver driver(driver_filename);
     driver.apply_model_transformations();
     driver.generate_image(argv[2]);
-    //driver.create_output_directory();
-    //driver.write_results();
 }
