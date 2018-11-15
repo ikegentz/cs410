@@ -13,33 +13,38 @@
 #include "camera.h"
 #include "light_source.h"
 #include "image.h"
-#include "utils.h"
 #include "sphere.h"
 
-/*
-    Loads the driver file and grabs each model's data
-*/
-class Driver
-{
-public:
-    Driver(const char* driver_filename);
-    int read_driver_file();
-    void apply_model_transformations();
-    void generate_image(const char* filename);
+namespace Raytracer {
 
-private:
-    std::unordered_map<std::string, WavefrontObj> wavefronts;
-    const char* driver_filename;
-    std::string output_dir;
-    unsigned recurse_depth;
+    /*
+        Loads the driver file and grabs model data
 
-    std::vector<Model> models;
-    std::vector<LightSource> light_sources;
-    std::vector<Sphere> spheres;
-    Camera camera;
-    Image image;
+    */
+    class Driver {
+    public:
+        Driver(const char *driver_filename);
 
-    void add_model_from_str(std::string line);
-};
+        int read_driver_file();
+
+        void apply_model_transformations();
+
+        void generate_image(const char *filename);
+
+    private:
+        std::unordered_map <std::string, WavefrontObj> wavefronts;
+        const char *driver_filename;
+        std::string output_dir;
+        unsigned recurse_depth;
+
+        std::vector <Model> models;
+        std::vector <LightSource> light_sources;
+        std::vector <Sphere> spheres;
+        Camera camera;
+        Image image;
+
+        void add_model_from_str(std::string line);
+    };
+}
 
 #endif //CS410_DRIVER_H

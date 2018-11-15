@@ -10,13 +10,15 @@
 #include <iomanip>
 
 #include "driver.h"
+#include "utils.h"
 
-Driver::Driver(const char *driver_filename) : recurse_depth(0)
+
+Raytracer::Driver::Driver(const char *driver_filename) : recurse_depth(0)
 {
     this->driver_filename = driver_filename;
 }
 
-int Driver::read_driver_file()
+int Raytracer::Driver::read_driver_file()
 {
     std::ifstream infile(this->driver_filename);
 
@@ -98,7 +100,7 @@ int Driver::read_driver_file()
     return 0;
 }
 
-void Driver::apply_model_transformations()
+void Raytracer::Driver::apply_model_transformations()
 {
     std::cout << "APPLYING MODEL TRANSFORMATIONS" << std::endl;
 
@@ -115,7 +117,7 @@ void Driver::apply_model_transformations()
     { std::cout << m.to_string() << std::endl; }
 }
 
-void Driver::generate_image(const char* filename)
+void Raytracer::Driver::generate_image(const char* filename)
 {
     this->image.render_image(this->camera, this->models, this->spheres, this->light_sources);
     std::cout << "WRITING " << filename << std::endl;
