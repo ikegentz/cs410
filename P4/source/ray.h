@@ -23,6 +23,19 @@ private:
 
 public:
     glm::vec3 position;
+
+    // face vertices we of face we intersect with
+    glm::vec3 Av;
+    glm::vec3 Bv;
+    glm::vec3 Cv;
+
+    // last t value of that face we intersect with
+    double last_t;
+    // did we hit anything?
+    bool hit;
+    // did we hit a sphere?
+    bool hit_sphere;
+
     Ray();
     void print() const;
     void set_direction(const glm::vec3 &direc);

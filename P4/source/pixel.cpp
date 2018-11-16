@@ -8,22 +8,11 @@
 Pixel::Pixel()
 {
     this->ray = Ray();
-    this->hit = false;
-    this->rgba = glm::vec4(0,0,0,1);
-    this->last_t = -1;
-    this->hit_sphere = false;
-
-    Av = glm::vec3(0,0,0);
-    Bv = glm::vec3(0,0,0);
-    Cv = glm::vec3(0,0,0);
+    this->rgba = glm::vec4(0, 0, 0, 1);
 }
-
 void Pixel::print() const
 {
-    std::cout << "PIXEL\n" <<
-    "\t";
+    std::cout << "PIXEL\n" << std::endl;
     ray.print();
-    std::cout << "\tHit: " << this->hit << "\n" <<
-    "\t" << "(R, G, B, A): " << glm::to_string(this->rgba) << "\n" <<
-    "\t" << "Latest t: " << this->last_t << std::endl;
+    std::cout << "\t" << "(R, G, B, A): " << glm::to_string(this->rgba) << std::endl;
 }

@@ -32,16 +32,9 @@ private:
     std::unordered_map <std::string, WavefrontObj> wavefronts;
     const char *driver_filename;
     std::string output_dir;
-    unsigned recurse_depth;
 
     // keep track of global data for the raytracer
     RaytracerData* data;
-    //std::vector <Model> models;
-    //std::vector <LightSource> light_sources;
-    //std::vector <Sphere> spheres;
-    //Camera camera;
-    //Image image;
-
     void add_model_from_str(std::string line);
 };
 

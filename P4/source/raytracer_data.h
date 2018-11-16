@@ -13,6 +13,7 @@ public:
     std::vector<Model> models;
     std::vector<Sphere> spheres;
     bool smooth;
+    int recurse_depth = 0;
 };
 
 #endif //P4_RAYTRACER_DATA_H

@@ -13,10 +13,11 @@
 #include "utils.h"
 
 
-Driver::Driver(const char *driver_filename, RaytracerData* data_) : recurse_depth(0)
+Driver::Driver(const char *driver_filename, RaytracerData* data_)
 {
     this->driver_filename = driver_filename;
     this->data = data_;
+    this->data->recurse_depth = 0;
 }
 
 int Driver::read_driver_file()
@@ -52,7 +53,8 @@ int Driver::read_driver_file()
         {
             std::vector<std::string> tokens;
             Utils::tokenize_line(line, tokens);
-            this->recurse_depth = std::stoi(tokens[1]);
+            this->data->recurse_depth = std::stoi(tokens[1]);
+            std::cout << "DEPTH: " << this->data->recurse_depth << std::endl;
         }
         else if(line.find("ambient") != std::string::npos)
         {

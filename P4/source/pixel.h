@@ -16,21 +16,9 @@
 class Pixel
 {
 public:
-    // last t value of that face we intersect with
-    double last_t;
-    // did we hit anything?
-    bool hit;
-    // did we hit a sphere?
-    bool hit_sphere;
-
     // the ray we shoot from the image plane into the scene
     Ray ray;
     glm::vec4 rgba;
-
-    // face vertices we of face we intersect with
-    glm::vec3 Av;
-    glm::vec3 Bv;
-    glm::vec3 Cv;
 
     Pixel();
     void print() const;

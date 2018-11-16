@@ -46,7 +46,7 @@ void Image::render_image()
             // set the ray's position and direction for this pixel
             this->pixelPt(row, col, -data->camera.d, data->camera.eye, wv, uv, vv);
             // cast this ray to see if it hits anything
-            this->process_pixel(this->pixel_array[row][col]);
+            this->process_pixel(this->pixel_array[row][col], this->pixel_array[row][col].ray, data->recurse_depth);
         }
     }
 }
@@ -174,49 +174,74 @@ std::tuple<bool, double, int, glm::vec3> Image::ray_cast_sphere(const Ray& ray)
     return std::make_tuple(hit, last_t, sphere_index, pt);
 }
 
-void Image::process_pixel(Pixel &pixel)
+void Image::process_pixel(Pixel &pixel, Ray& ray, int depth)
 {
+    if(depth < 0)
+        return;
+
     Material mat;
-    std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> cast_results = ray_cast_model(pixel.ray);
+    std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> cast_results = ray_cast_model(ray);
 
     if(std::get<0>(cast_results) == true)
     {
-        pixel.last_t = std::get<1>(cast_results);
-        pixel.hit = true;
-        pixel.hit_sphere = false;
-        pixel.Av = std::get<2>(cast_results);
-        pixel.Bv = std::get<3>(cast_results);
-        pixel.Cv = std::get<4>(cast_results);
+        ray.last_t = std::get<1>(cast_results);
+        ray.hit = true;
+        ray.hit_sphere = false;
+        ray.Av = std::get<2>(cast_results);
+        ray.Bv = std::get<3>(cast_results);
+        ray.Cv = std::get<4>(cast_results);
         mat = data->models[std::get<5>(cast_results)].material;
     }
 
     Sphere the_hit_sphere;
     glm::vec3 pt;
-    std::tuple<bool, double, int, glm::vec3> cast_results_sphere = ray_cast_sphere(pixel.ray);
+    std::tuple<bool, double, int, glm::vec3> cast_results_sphere = ray_cast_sphere(ray);
 
     if(std::get<0>(cast_results_sphere) == true)
     {
-        pixel.hit = true;
-        pixel.hit_sphere = true;
-        pixel.last_t = std::get<1>(cast_results_sphere);
+        ray.hit = true;
+        ray.hit_sphere = true;
+        ray.last_t = std::get<1>(cast_results_sphere);
         the_hit_sphere = data->spheres[std::get<2>(cast_results_sphere)];
         pt = std::get<3>(cast_results_sphere);
     }
 
-    if(pixel.hit)
+    // for first loop, we want to set pixel EQUAL to color value
+    if(depth == data->recurse_depth)
     {
-        if(pixel.hit_sphere)
-            pixel.rgba = this->color_me_sphere(pt, pixel, the_hit_sphere);
+        if (ray.hit)
+        {
+            if (ray.hit_sphere)
+                pixel.rgba = this->color_me_sphere(pt, ray, the_hit_sphere);
+            else
+                pixel.rgba = this->color_me(pixel.ray.get_direction() * float(ray.last_t) + data->camera.eye, mat, ray);
+        }
         else
-            pixel.rgba = this->color_me(pixel.ray.get_direction() * float(pixel.last_t) + data->camera.eye, mat, pixel);
+        {
+            pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
+            depth = -1;
+        }
     }
+    // otherwise we are recursing and want to ADD to pixel color, the reflected surface color
     else
     {
-        pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
+        if(ray.hit)
+        {
+            if (ray.hit_sphere)
+                pixel.rgba += this->color_me_sphere(pt, ray, the_hit_sphere);
+            else
+                pixel.rgba += this->color_me(pixel.ray.get_direction() * float(ray.last_t) + data->camera.eye, mat, ray);
+        }
+        else
+        {
+            pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
+            depth = -1;
+        }
     }
+    // process_pixel(..., ..., depth-1);
 }
 
-glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, const Pixel& pixel, const Sphere& sphere)
+glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, const Ray& ray, const Sphere& sphere)
 {
     glm::vec3 ptos = intersection_point;
     glm::vec3 snrm = glm::normalize(ptos - sphere.position);
@@ -230,7 +255,7 @@ glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, const Pixel& pixe
         glm::vec3 toL = glm::normalize(ptL - ptos);
 
         // check for sphere shadows
-        if(pixel.last_t >= 0.0001f)
+        if(ray.last_t >= 0.0001f)
         {
             for (Sphere sphere : data->spheres)
             {
@@ -259,7 +284,7 @@ glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, const Pixel& pixe
         {
             glm::mat3x3 kds = glm::mat3x3(glm::vec3(mat.kd.x, 0, 0), glm::vec3(0, mat.kd.y, 0), glm::vec3(0, 0, mat.kd.z));
             color += kds * emL * glm::dot(snrm, toL);
-            glm::vec3 toC = glm::normalize(pixel.ray.position - ptos);
+            glm::vec3 toC = glm::normalize(ray.position - ptos);
             glm::vec3 spR = (2* glm::dot(snrm, toL) * snrm) - toL;
             float CdR = glm::dot(toC, spR);
 
@@ -276,18 +301,18 @@ glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, const Pixel& pixe
     return glm::vec4(color.x, color.y, color.z, 1.0);
 }
 
-glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, const Pixel &pixel)
+glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, const Ray& ray)
 {
     glm::vec3 I = glm::vec3(data->camera.ambient.x*mat.ka.x, data->camera.ambient.y*mat.ka.y, data->camera.ambient.z*mat.ka.z); // get ambient as base light amount
     // 2 edges of the triangle (face)
-    glm::vec3 E1 = pixel.Bv - pixel.Av;
-    glm::vec3 E2 = pixel.Cv - pixel.Av;
+    glm::vec3 E1 = ray.Bv - ray.Av;
+    glm::vec3 E2 = ray.Cv - ray.Av;
 
     // calculate an initial surface normal, might get flipped down below
     glm::vec3 N = glm::normalize(glm::cross(E1, E2));
 
     // check if we need to flip
-    glm::vec3 toIntersection = glm::normalize(intersection_point - pixel.ray.position);
+    glm::vec3 toIntersection = glm::normalize(intersection_point - ray.position);
     if(glm::dot(toIntersection, N) > 0)
         N = -N;
 
@@ -305,7 +330,7 @@ glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, const Pix
         if(glm::dot(N, toL) > 0)
             continue;
 
-        glm::vec3 shadow_intersec_point = pixel.ray.position + pixel.ray.get_direction() * float(pixel.last_t);
+        glm::vec3 shadow_intersec_point = ray.position + ray.get_direction() * float(ray.last_t);
         glm::vec3 Lray;
         glm::vec3 fixed_light_position;
 
@@ -322,7 +347,7 @@ glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, const Pix
         }
 
         // check for sphere shadows
-        if(pixel.last_t >= 0.0001f)
+        if(ray.last_t >= 0.0001f)
         {
             for (Sphere sphere : data->spheres)
             {
