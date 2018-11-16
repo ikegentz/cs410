@@ -1,0 +1,16 @@
+eye 50 50 100
+look 50 50 10
+up 0 1 0
+d 5
+bounds -2.5 -2.5 2.5 2.5
+res 256 256
+ambient 0.2 0.2 0.2
+light -100 -100 100 1 0.5 0.5 0.5
+#light 90 90 100 1 0.5 0.5 0.5
+# Medium white sphere in the middle
+sphere 30 30 10 18 0.2 0.2 0.2 1.0 1.0 1.0 0.50 0.50 0.50 0.9 0.9 0.9
+# two smaller spheres on the edges
+sphere 32 68 40 9 0.7 0.6 0.2 0.1 0.1 0.7 0.50 0.50 0.50 0.9 0.9 0.9
+sphere 68 32 40 9 0.2 0.7 0.2 0.7 0.1 0.1 0.50 0.50 0.50 0.9 0.9 0.9
+# big green sphere on the bottom
+sphere 68 45 -60 50 0.2 0.7 0.2 0.1 0.7 0.1 0.50 0.50 0.50 0.9 0.9 0.9

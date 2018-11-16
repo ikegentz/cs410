@@ -130,8 +130,6 @@ std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> Image::ray_cast_m
         return std::make_tuple(true, last_t, retAv, retBv, retCv, model_index);
     else
         return std::make_tuple(false, -1, retAv, retBv, retCv, model_index);
-
-
 }
 
 //        hit?  where  sphere_index  pt
@@ -178,7 +176,6 @@ std::tuple<bool, double, int, glm::vec3> Image::ray_cast_sphere(const Ray& ray)
 
 void Image::process_pixel(Pixel &pixel)
 {
-
     Material mat;
     std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> cast_results = ray_cast_model(pixel.ray);
 
@@ -232,6 +229,32 @@ glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, const Pixel& pixe
         glm::vec3 emL = light.rgb_amount;
         glm::vec3 toL = glm::normalize(ptL - ptos);
 
+        // check for sphere shadows
+        if(pixel.last_t >= 0.0001f)
+        {
+            for (Sphere sphere : data->spheres)
+            {
+                glm::vec3 C = sphere.position;
+                glm::vec3 L = intersection_point;
+                glm::vec3 U = glm::normalize(light.position - L);
+
+                float v = glm::dot(C - L, U);
+                float c = glm::length(C - L);
+                float r = sphere.radius;
+                float dsq = r * r - (c * c - v * v);
+
+                if (dsq >= 0)
+                {
+                    float d = sqrt(dsq);
+                    float t = v-d;
+
+                    if(t > 0)
+                        goto nextLight;
+                }
+            }
+        }
+        ////end shadow checks
+
         if(glm::dot(snrm, toL) > 0.0)
         {
             glm::mat3x3 kds = glm::mat3x3(glm::vec3(mat.kd.x, 0, 0), glm::vec3(0, mat.kd.y, 0), glm::vec3(0, 0, mat.kd.z));
@@ -246,6 +269,8 @@ glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, const Pixel& pixe
                 color += kdsS * emL * float(pow(CdR, mat.PHONG));
             }
         }
+
+        nextLight:;
     }
 
     return glm::vec4(color.x, color.y, color.z, 1.0);
@@ -271,8 +296,6 @@ glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, const Pix
 
     for(LightSource light : data->light_sources)
     {
-        // calculate a
-
         glm::vec3 toL = glm::normalize(light.position - intersection_point);
         // check if we have the 'correct' surface normal, or need to flip it
         // dot product should be negative for 'correct' surface normal
