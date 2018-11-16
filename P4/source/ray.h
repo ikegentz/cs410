@@ -38,8 +38,9 @@ public:
 
     Ray();
     void print() const;
-    void set_direction(const glm::vec3 &direc);
-    glm::vec3 get_direction() const { return this->direction; }
+    void set_direction(glm::vec3 direc);
+    glm::vec3 get_direction() const { return glm::normalize(this->direction); }
+    glm::vec3 get_direction_full() const {return this->direction;};
 };
 
 #endif //CS410_RAY_H
