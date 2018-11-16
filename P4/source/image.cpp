@@ -73,12 +73,13 @@ void Image::pixelPt(const unsigned i, const unsigned j, const double near,
 }
 
 //        hit? where?  Av        Bv          Cv      model_index
-std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> Image::ray_cast_model(const Ray& ray)
+std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int, Ray> Image::ray_cast_model(const Ray& ray)
 {
     glm::vec3 retAv, retBv, retCv;
     int model_index = 0, i = 0;
     bool hit = false;
     double last_t = -1;
+    Ray Rv;
 
     for(Model m : data->models)
     {
@@ -120,6 +121,22 @@ std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> Image::ray_cast_m
                     retBv = Bv;
                     retCv = Cv;
                     model_index = i;
+
+
+                    glm::vec3 intersection_point = ray.position + (float)t*ray.get_direction();
+                    // we hit something, so calculate reflecting ray
+                    glm::vec3 E1 = retBv - retAv;
+                    glm::vec3 E2 = retCv - retAv;
+                    // calculate an initial surface normal, might get flipped down below
+                    glm::vec3 N = glm::normalize(glm::cross(E1, E2));
+                    // check if we need to flip
+                    glm::vec3 toIntersection = glm::normalize(intersection_point - ray.position);
+                    if(glm::dot(toIntersection, N) > 0)
+                        N = -N;
+
+                    glm::vec3 new_direc = 2*glm::dot(-ray.get_direction(), N) * N - (-ray.get_direction());
+                    Rv.set_direction(new_direc);
+                    Rv.position = intersection_point;
                 }
             }
         }
@@ -127,13 +144,13 @@ std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> Image::ray_cast_m
     }
 
     if(hit)
-        return std::make_tuple(true, last_t, retAv, retBv, retCv, model_index);
+        return std::make_tuple(true, last_t, retAv, retBv, retCv, model_index, Rv);
     else
-        return std::make_tuple(false, -1, retAv, retBv, retCv, model_index);
+        return std::make_tuple(false, -1, retAv, retBv, retCv, model_index, Rv);
 }
 
 //        hit?  where  sphere_index  pt
-std::tuple<bool, double, int, glm::vec3> Image::ray_cast_sphere(const Ray& ray)
+std::tuple<bool, double, int, glm::vec3, Ray> Image::ray_cast_sphere(const Ray& ray)
 {
     // loop through all spheres
     float d = 0.0f;
@@ -141,6 +158,7 @@ std::tuple<bool, double, int, glm::vec3> Image::ray_cast_sphere(const Ray& ray)
     int count = 0, sphere_index = 0;
     double last_t = -1;
     glm::vec3 pt;
+    Ray Rv;
 
     for(Sphere sphere : data->spheres)
     {
@@ -165,22 +183,34 @@ std::tuple<bool, double, int, glm::vec3> Image::ray_cast_sphere(const Ray& ray)
                 last_t = t_temp;
                 hit = true;
                 sphere_index = count;
-                goto skipCircle;
+
+                glm::vec3 intersection_point = ray.position + (float)last_t*ray.get_direction();
+                glm::vec3 N = glm::normalize(intersection_point - sphere.position);
+
+                glm::vec3 new_direc = 2*glm::dot(-ray.get_direction(), N) * N - (-ray.get_direction());
+                Rv.set_direction(new_direc);
+                Rv.position = intersection_point;
+
+               // goto skipCircle;
             }
         }
         ++count;
     }
     skipCircle:;
-    return std::make_tuple(hit, last_t, sphere_index, pt);
+    return std::make_tuple(hit, last_t, sphere_index, pt, Rv);
 }
 
 void Image::process_pixel(Pixel &pixel, Ray& ray, int depth)
 {
     if(depth < 0)
+    {
+        //std::cout << glm::to_string(pixel.rgba) << std::endl;
         return;
+    }
 
     Material mat;
-    std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> cast_results = ray_cast_model(ray);
+    Ray Rv;
+    std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int, Ray> cast_results = ray_cast_model(ray);
 
     if(std::get<0>(cast_results) == true)
     {
@@ -191,11 +221,13 @@ void Image::process_pixel(Pixel &pixel, Ray& ray, int depth)
         ray.Bv = std::get<3>(cast_results);
         ray.Cv = std::get<4>(cast_results);
         mat = data->models[std::get<5>(cast_results)].material;
+
+        Rv = std::get<6>(cast_results);
     }
 
     Sphere the_hit_sphere;
     glm::vec3 pt;
-    std::tuple<bool, double, int, glm::vec3> cast_results_sphere = ray_cast_sphere(ray);
+    std::tuple<bool, double, int, glm::vec3, Ray> cast_results_sphere = ray_cast_sphere(ray);
 
     if(std::get<0>(cast_results_sphere) == true)
     {
@@ -204,6 +236,7 @@ void Image::process_pixel(Pixel &pixel, Ray& ray, int depth)
         ray.last_t = std::get<1>(cast_results_sphere);
         the_hit_sphere = data->spheres[std::get<2>(cast_results_sphere)];
         pt = std::get<3>(cast_results_sphere);
+        Rv = std::get<4>(cast_results_sphere);
     }
 
     // for first loop, we want to set pixel EQUAL to color value
@@ -228,17 +261,23 @@ void Image::process_pixel(Pixel &pixel, Ray& ray, int depth)
         if(ray.hit)
         {
             if (ray.hit_sphere)
-                pixel.rgba += this->color_me_sphere(pt, ray, the_hit_sphere);
+            {
+              //  pixel.rgba += (float)pow(0.5, data->recurse_depth-depth)*this->color_me_sphere(pt, ray, the_hit_sphere);
+              pixel.rgba += (float)0.5 * this->color_me_sphere(pt, ray, the_hit_sphere);
+                //pixel.rgba = glm::vec4(ret.x*mat.kr.x * 1.0, ret.y*mat.kr.y * 1.0, ret.z*mat.kr.z * 1.0, 1);
+            }
             else
-                pixel.rgba += this->color_me(pixel.ray.get_direction() * float(ray.last_t) + data->camera.eye, mat, ray);
+            {
+                //pixel.rgba += (float)0.1*this->color_me(pixel.ray.get_direction() * float(ray.last_t) + data->camera.eye, mat, ray);
+            }
         }
         else
         {
-            pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
+           // pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
             depth = -1;
         }
     }
-    // process_pixel(..., ..., depth-1);
+   process_pixel(pixel, Rv, depth-1);
 }
 
 glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, const Ray& ray, const Sphere& sphere)
