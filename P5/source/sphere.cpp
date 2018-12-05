@@ -53,6 +53,15 @@ this->material.kr = glm::vec3(
         std::stof(tokens.at(15)),
         std::stof(tokens.at(16)));
 
+// extract ko
+this->material.ko = glm::vec3(
+        std::stof(tokens.at(17)),
+        std::stof(tokens.at(18)),
+        std::stof(tokens.at(19))
+        );
+
+this->material.eta = std::stof(tokens.at(20));
+
 std::cout << "LOADED SPHERE" << std::endl;
 this->print();
 }

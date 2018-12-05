@@ -298,7 +298,7 @@ glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, const Ray& ray, c
         nextLight:;
     }
 
-    return glm::vec4(color.x, color.y, color.z, 1.0);
+    return glm::vec4(color.x * sphere.material.ko.x, color.y * sphere.material.ko.y, color.z * sphere.material.ko.z, 1.0);
 }
 
 glm::vec4 Image::color_me(glm::vec3 intersection_point, Material &mat, const Ray& ray)

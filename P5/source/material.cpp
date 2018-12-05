@@ -15,6 +15,8 @@ Material::Material()
     this->kd = glm::vec3(1.0, 1.0, 1.0);
     this->ks = glm::vec3(1.0, 1.0, 1.0);
     this->kr = glm::vec3(1.0, 1.0, 1.0);
+    this->ko = glm::vec3(1.0, 1.0, 1.0);
+    this->eta = 1.5; //default ETA for glass
     this->PHONG = 16;
 }
 
@@ -24,6 +26,8 @@ Material::Material(const Material& mat)
     this->kd = mat.kd;
     this->ks = mat.ks;
     this->kr = mat.kr;
+    this->ko = mat.ko;
+    this->eta = mat.eta;
     this->PHONG = mat.PHONG;
 }
 
