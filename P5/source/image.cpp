@@ -241,6 +241,46 @@ void Image::process_pixel(Pixel &pixel, Ray& ray, int depth)
     // process_pixel(..., ..., depth-1);
 }
 
+std::tuple<bool, glm::vec3> Image::refract_tray(glm::vec3 W, glm::vec3 N, float eta1, float eta2 = AIR_ETA)
+{
+    float etar = eta1 / eta2;
+    float a = -etar;
+    float wn = glm::dot(W, N);
+    float radsq = pow(etar, 2) * (pow(wn,2)-1) + 1;
+
+    glm::vec3 T;
+    if(radsq < 0.0f)
+        return std::make_tuple(false, T);
+    else
+    {
+        float b = (etar * wn) - sqrt(radsq);
+        T = W*a + N*b;
+        return std::make_tuple(true, T);
+    }
+}
+
+std::tuple<bool, Ray> Image::refract_exit(glm::vec3 W, glm::vec3 pt, float eta_inside, const Sphere& sphere)
+{
+    glm::vec3 T1;
+    bool test;
+    std::tie(test, T1) = refract_tray(W, glm::normalize(pt - sphere.position), 1.0f, sphere.material.eta);
+    Ray refR;
+
+    if(!test)
+        return std::make_tuple(false, refR);
+    else
+    {
+        glm::vec3 exit = pt + T1 * glm::dot(sphere.position-pt, T1);
+        glm::vec3 Nin = glm::normalize(sphere.position - exit);
+        glm::vec3 T2;
+        std::tie(test, T2) = refract_tray(-T1, Nin, eta_inside, 1.0);
+        refR.position = exit;
+        refR.set_direction(T2);
+
+        return std::make_tuple(true, refR);
+    }
+}
+
 glm::vec4 Image::color_me_sphere(glm::vec3 intersection_point, const Ray& ray, const Sphere& sphere)
 {
     glm::vec3 ptos = intersection_point;
