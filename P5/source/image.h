@@ -48,15 +48,6 @@ public:
     void render_image();
     void pixelPt(const unsigned i, const unsigned j, const double near,
                         const glm::vec3 &eye, const glm::vec3 &wv, const glm::vec3 &uv, const glm::vec3 &vv);
-    void process_pixel(Pixel &pixel, Ray& ray, int recursion_depth);
-    std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int>  ray_cast_model(const Ray& ray);
-    std::tuple<bool, double, int, glm::vec3> ray_cast_sphere(const Ray& ray);
-
-    std::tuple<bool, glm::vec3> refract_tray(glm::vec3 W, glm::vec3 N, float eta1, float eta2);
-    std::tuple<bool, Ray> refract_exit(glm::vec3 W, glm::vec3 pt, float eta_inside, const Sphere& sphere);
-
-    glm::vec4 color_me(glm::vec3 intersection_point, Material &mat, const Ray& ray);
-    glm::vec4 color_me_sphere(glm::vec3 intersection_point, const Ray& ray, const Sphere& sphere);
     void write_image(const char* filename) const;
     unsigned bound_rgb(double in_color) const;
 

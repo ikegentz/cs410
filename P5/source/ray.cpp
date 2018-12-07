@@ -6,26 +6,43 @@
 
 Ray::Ray()
 {
-    this->direction = glm::vec3(0,0,1);
-    this->position = glm::vec3(0,0,0);
+    this->D = glm::vec3(0,0,1);
+    this->L = glm::vec3(0,0,0);
 
-    this->hit = false;
-    this->last_t = -1;
-    this->hit_sphere = false;
+    this->best_t = -1;
 
-    this->Av = glm::vec3(0,0,0);
-    this->Bv = glm::vec3(0,0,0);
-    this->Cv = glm::vec3(0,0,0);
+    this->bestPt = glm::vec3(0,0,0);
+    this->bestSphere = nullptr;
 }
 
 void Ray::print() const
 {
-    std::cout << "RAY\n" <<
-    "\t" << "Position: " << glm::to_string(this->position) << "\n" <<
-    "\t" << "Direction: " << glm::to_string(this->direction) << std::endl;
+//    std::cout << "RAY\n" <<
+//    "\t" << "Position: " << glm::to_string(this->position) << "\n" <<
+//    "\t" << "Direction: " << glm::to_string(this->direction) << std::endl;
 }
 
 void Ray::set_direction(glm::vec3 direc)
 {
-    this->direction = direc;
+    this->D = direc;
 }
+
+bool Ray::sphere_test(Sphere& sph)
+{
+    glm::vec3 Tv = sph.position - this->L;
+    float v = glm::dot(Tv, this->D);
+    float csq = glm::dot(Tv, Tv);
+    float disc = sph.radius*sph.radius - (csq - v*v);
+    if(disc > 0)
+    {
+        float tval = v - sqrt(disc);
+        if(tval < this->best_t && tval > 0.001f)
+        {
+            this->best_t = tval;
+            this->bestSphere = &sph;
+            this->bestPt = this->L + tval*this->D;
+            return true;
+        }
+    }
+    return false;
+}// TODO ROSS

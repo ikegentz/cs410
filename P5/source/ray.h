@@ -13,34 +13,35 @@
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtx/transform.hpp"
+#include "sphere.h"
 #include <string>
 #include <iostream>
 
 class Ray
 {
 private:
-    glm::vec3 direction; // private so we can make sure it stays normalized
+    glm::vec3 D; // private so we can make sure it stays normalized. direction
 
 public:
-    glm::vec3 position;
-
-    // face vertices we of face we intersect with
-    glm::vec3 Av;
-    glm::vec3 Bv;
-    glm::vec3 Cv;
+    glm::vec3 L; // location
 
     // last t value of that face we intersect with
-    double last_t;
+    double best_t;
     // did we hit anything?
     bool hit;
     // did we hit a sphere?
     bool hit_sphere;
 
+    Sphere* bestSphere; // TODO ROSS
+    glm::vec3 bestPt; // TODO ROSS
+
     Ray();
     void print() const;
     void set_direction(glm::vec3 direc);
-    glm::vec3 get_direction() const { return glm::normalize(this->direction); }
-    glm::vec3 get_direction_full() const {return this->direction;};
+    glm::vec3 get_direction() const { return glm::normalize(this->D); }
+    glm::vec3 get_direction_full() const {return this->D;};
+
+    bool sphere_test(Sphere& sph);// TODO ROSS
 };
 
 #endif //CS410_RAY_H
