@@ -91,39 +91,27 @@ bool Image::shadow(glm::vec3 pt, LightSource lt)
     for (Sphere s : data->spheres)
     {
         if(ray.sphere_test(s) && ray.best_t < dtl)
-        {
             return true;
-        }
     }
     return false;
 }
 
 void Image::pt_illum(Ray ray, glm::vec3 N, const Material& mat, glm::vec3& accum, glm::vec3 refatt)
 {
-    glm::vec3 color; // set initial color to ambient light
-    color.x = mat.ka.x;
-    color.y = mat.ka.y;
-    color.z = mat.ka.z;
-    //std::cout << "AMB: " << glm::to_string(color) << std::endl;
-
+    glm::vec3 color = glm::vec3(0.2f, 0.2f, 0.2f); // set initial color to ambient light
+    color.x *= mat.ka.x;
+    color.y *= mat.ka.y;
+    color.z *= mat.ka.z;
 
     for (LightSource lt : data->light_sources)
     {
         glm::vec3 toL = glm::normalize(lt.position - ray.bestPt);
-
         float NdotL = glm::dot(N, toL);
         if(NdotL > 0.0f && !shadow(ray.bestPt, lt))
         {
-          //  std::cout << "PRE: " << glm::to_string(color) << std::endl;
-
             color.x += mat.kd.x * lt.E.x * NdotL;
             color.y += mat.kd.y * lt.E.y * NdotL;
             color.z += mat.kd.z * lt.E.z * NdotL;
-
-           // std::cout << "POST: " << glm::to_string(color) << std::endl << std::endl;
-
-            //std::cout << "LIGHT: " << glm::to_string(lt.E) << std::endl;
-            //std::cout << "NdotL: " << NdotL << std::endl;
 
             glm::vec3 toC = glm::normalize(ray.L - ray.bestPt);
             glm::vec3 spR = glm::normalize((2 * NdotL * N) - toL);

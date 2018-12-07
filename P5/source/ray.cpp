@@ -52,7 +52,7 @@ bool Ray::sphere_test(Sphere sph)
         {
             this->best_t = tval;
             this->bestSphere = sph;
-            this->bestPt = this->L + tval*this->D;
+            this->bestPt = this->L + tval*this->get_direction();
             this->hit = true;
             return true;
         }
