@@ -233,7 +233,7 @@ glm::vec3 Image::ray_trace(Ray ray, glm::vec3& accum, glm::vec3 refatt, int leve
 
         bool test = std::get<0>(ray_cast_model(ray));
         if (test) {
-            accum = glm::vec3(1.0, 0, 0);
+            accum = glm::vec3(0.1f, 0.5f, 0.6f); // hard code color so we don't have to mess with coloring the model >:D
         }
     }
 

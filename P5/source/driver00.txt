@@ -3,8 +3,8 @@ look 0 0 0
 up 0 1 0
 d 5
 bounds -2 -2 2 2
-res 512 512
-recursionLevel 0
+res 256 256
+recursionLevel 3
 ambient 0.2 0.2 0.2
 light -100 50 150 1 0.5 0.5 0.5
 #light -200 100 200 1 0.5 0.5 0.5
