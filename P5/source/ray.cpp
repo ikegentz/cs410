@@ -9,7 +9,7 @@ Ray::Ray()
     this->D = glm::vec3(0,0,1);
     this->L = glm::vec3(0,0,0);
 
-    this->best_t = -1;
+    this->best_t = std::numeric_limits<float>::max();
 
     this->bestPt = glm::vec3(0,0,0);
     this->bestSphere = nullptr;
@@ -19,7 +19,7 @@ Ray::Ray(glm::vec3 L, glm::vec3 D)
 {
     this->L = L;
     this->D = glm::normalize(D);
-    this->best_t = -1;
+    this->best_t = std::numeric_limits<float>::max();
     this->bestPt = glm::vec3(0,0,0);
     this->bestSphere = nullptr;
 }

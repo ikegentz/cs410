@@ -16,6 +16,7 @@
 #include "sphere.h"
 #include <string>
 #include <iostream>
+#include <limits>
 
 class Ray
 {
