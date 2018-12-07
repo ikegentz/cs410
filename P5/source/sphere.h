@@ -14,7 +14,7 @@
 #include "glm/gtx/string_cast.hpp"
 #include "glm/gtx/transform.hpp"
 #include "material.h"
-
+#include <tuple>
 
 class Sphere
 {
@@ -27,8 +27,11 @@ public:
     float r;
     Material material;
     static constexpr float PHONG = 16;
+    static constexpr float AIR_ETA = 1.0f;
 
 
+    std::tuple<bool, glm::vec3> refract_tray(glm::vec3 W, glm::vec3 N, float eta1, float eta2);
+    std::tuple<bool, glm::vec3, glm::vec3> refract_exit(glm::vec3 W, glm::vec3 pt, float eta_inside, const Sphere& sphere);
 private:
 };
 

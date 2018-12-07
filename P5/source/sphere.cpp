@@ -77,3 +77,44 @@ void Sphere::print()
     "\tKr: " << glm::to_string(this->material.kr) << "\n" <<
     "\tPHONG: " << this->PHONG << std::endl;
 }
+
+std::tuple<bool, glm::vec3> Sphere::refract_tray(glm::vec3 W, glm::vec3 N, float eta1, float eta2 = AIR_ETA)
+{
+    float etar = eta1 / eta2;
+    float a = -etar;
+    float wn = glm::dot(W, N);
+    float radsq = pow(etar, 2) * (pow(wn,2)-1) + 1;
+
+    glm::vec3 T;
+    if(radsq < 0.0f)
+        return std::make_tuple(false, T);
+    else
+    {
+        float b = (etar * wn) - sqrt(radsq);
+        T = W*a + N*b;
+        return std::make_tuple(true, T);
+    }
+}
+
+std::tuple<bool, glm::vec3, glm::vec3> Sphere::refract_exit(glm::vec3 W, glm::vec3 pt, float eta_inside, const Sphere& sphere)
+{
+    glm::vec3 T1;
+    bool test;
+    std::tie(test, T1) = refract_tray(W, glm::normalize(pt - sphere.C), 1.0f, sphere.material.eta);
+    glm::vec3 refR_pos;
+    glm::vec3 refR_direc;
+
+    if(!test)
+        return std::make_tuple(false, glm::vec3(0,0,0), glm::vec3(0,0,0));
+    else
+    {
+        glm::vec3 exit = pt + T1 * glm::dot(sphere.C-pt, T1);
+        glm::vec3 Nin = glm::normalize(sphere.C - exit);
+        glm::vec3 T2;
+        std::tie(test, T2) = refract_tray(-T1, Nin, eta_inside, 1.0);
+        refR_pos = exit;
+        refR_direc = T2;
+
+        return std::make_tuple(true, refR_pos, refR_direc);
+    }
+}
