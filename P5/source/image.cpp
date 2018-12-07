@@ -148,25 +148,25 @@ glm::vec3 Image::ray_trace(Ray ray, glm::vec3& accum, glm::vec3 refatt, int leve
             accum.z += refatt.z * mat.ko.z * flec.z;
         }
         // REFRACTION
-//        if(level > 0 && mat.ko.x+mat.ko.y+mat.ko.z < 3.0f)
-//        {
-//            glm::vec3 thru = glm::vec3(0,0,0);
-//            bool test;
-//            glm::vec3 pos;
-//            glm::vec3 direc;
-//            std::tie(test, pos, direc) = ray.bestSphere.refract_exit(-1.0f*ray.get_direction(),ray.bestPt, mat.eta, ray.bestSphere);
-//            if(test)
-//            {
-//                glm::vec3 temp;
-//                temp.x = mat.kr.x * refatt.x;
-//                temp.y = mat.kr.y * refatt.y;
-//                temp.z = mat.kr.z * refatt.z;
-//                ray_trace(Ray(pos, glm::normalize(direc)), thru, temp, level-1); // TODO FINISH THIS -- CHECK MAT.ko??
-//                accum.x += refatt.x * (1.0 - mat.ko.x) * thru.x;
-//                accum.y += refatt.y * (1.0 - mat.ko.y) * thru.y;
-//                accum.z += refatt.z * (1.0 - mat.ko.z) * thru.z;
-//            }
-//        }
+        if(level > 0 && mat.ko.x+mat.ko.y+mat.ko.z < 3.0f)
+        {
+            glm::vec3 thru = glm::vec3(0.0,0.0,0.0);
+            glm::vec3 point;
+            glm::vec3 direction;
+            std::tie(point, direction) = ray.bestSphere.refract_exit(-1.0f*ray.get_direction(), ray.bestPt, mat.eta, 1.0f);
+            Ray fraR(point, direction);
+            if(glm::length(direction) > 0.01f) {
+                glm::vec3 tempFatt;
+                tempFatt.x = mat.kr.x * refatt.x;
+                tempFatt.y = mat.kr.y * refatt.y;
+                tempFatt.z = mat.kr.z * refatt.z;
+                ray_trace(fraR, thru, tempFatt, level-1);
+
+                accum.x += refatt.x * (1.0f - mat.ko.x) * thru.x;
+                accum.y += refatt.y * (1.0f - mat.ko.y) * thru.y;
+                accum.z += refatt.z * (1.0f - mat.ko.z) * thru.z;
+            }
+        }
     }
     return accum;
 }
