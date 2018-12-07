@@ -29,10 +29,10 @@ void Ray::set_direction(glm::vec3 direc)
 
 bool Ray::sphere_test(Sphere& sph)
 {
-    glm::vec3 Tv = sph.position - this->L;
+    glm::vec3 Tv = sph.C - this->L;
     float v = glm::dot(Tv, this->D);
     float csq = glm::dot(Tv, Tv);
-    float disc = sph.radius*sph.radius - (csq - v*v);
+    float disc = sph.r*sph.r - (csq - v*v);
     if(disc > 0)
     {
         float tval = v - sqrt(disc);

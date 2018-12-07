@@ -68,7 +68,7 @@ void Image::pixelPt(const unsigned i, const unsigned j, const double near,
     glm::vec3 pixpt = eye + (wv * float(near)) + (uv * float(px)) + (vv * float(py)); // the ray's position
     glm::vec3 shoot = pixpt - eye;
     glm::normalize(shoot); // the ray's direction
-    ray.position = pixpt;
+    ray.L = pixpt;
     ray.set_direction(shoot);
 }
 

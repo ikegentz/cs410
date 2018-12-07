@@ -23,10 +23,12 @@ public:
     void load_sphere(std::string line);
     void print();
 
-    glm::vec3 position;
-    float radius;
+    glm::vec3 C;
+    float r;
     Material material;
     static constexpr float PHONG = 16;
+
+
 private:
 };
 

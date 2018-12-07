@@ -10,8 +10,8 @@
 
 Sphere::Sphere()
 {
-    this->position = glm::vec3(0,0,0);
-    this->radius = 1;
+    this->C = glm::vec3(0,0,0);
+    this->r = 1;
     this->material = Material();
 }
 
@@ -20,34 +20,34 @@ void Sphere::load_sphere(std::string line)
 std::vector<std::string> tokens;
 Utils::tokenize_line(line, tokens);
 
-// extract position
-this->position = glm::vec3(
+// extract C
+this->C = glm::vec3(
         std::stof(tokens.at(1)),
         std::stof(tokens.at(2)),
         std::stof(tokens.at(3)));
 
 // extract raduis
-this->radius = std::stof(tokens.at(4));
+this->r = std::stof(tokens.at(4));
 
-// extract position
+// extract C
 this->material.ka = glm::vec3(
         std::stof(tokens.at(5)),
         std::stof(tokens.at(6)),
         std::stof(tokens.at(7)));
 
-// extract position
+// extract C
 this->material.kd = glm::vec3(
         std::stof(tokens.at(8)),
         std::stof(tokens.at(9)),
         std::stof(tokens.at(10)));
 
-// extract position
+// extract C
 this->material.ks = glm::vec3(
         std::stof(tokens.at(11)),
         std::stof(tokens.at(12)),
         std::stof(tokens.at(13)));
 
-// extract position
+// extract C
 this->material.kr = glm::vec3(
         std::stof(tokens.at(14)),
         std::stof(tokens.at(15)),
@@ -69,8 +69,8 @@ this->print();
 void Sphere::print()
 {
     std::cout << "SPHERE: \n" <<
-    "\tPosition: " << glm::to_string(this->position) << "\n" <<
-    "\tRadius: " << this->radius << "\n" <<
+    "\tC: " << glm::to_string(this->C) << "\n" <<
+    "\tr: " << this->r << "\n" <<
     "\tKa: " << glm::to_string(this->material.ka) << "\n" <<
     "\tKd: " << glm::to_string(this->material.kd) << "\n" <<
     "\tKs: " << glm::to_string(this->material.ks) << "\n" <<
