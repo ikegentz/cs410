@@ -4,7 +4,7 @@ up 0 1 0
 d 5
 bounds -2 -2 2 2
 res 512 512
-recursionLevel 0
+recursionLevel 3
 ambient 0.2 0.2 0.2
 light 20 100 100 1 0.75 0.75 0.75
 light 80 100 100 1 0.75 0.75 0.75
