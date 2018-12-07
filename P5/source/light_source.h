@@ -20,7 +20,7 @@ class LightSource
 public:
     LightSource();
     glm::vec3 position;
-    glm::vec3 rgb_amount; // amount of R, G, B emitted by this light
+    glm::vec3 E; // amount of R, G, B emitted by this light Energy
     bool infinity;
 
     void load_light(std::string light);

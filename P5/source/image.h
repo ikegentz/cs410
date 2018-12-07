@@ -51,10 +51,12 @@ public:
     void write_image(const char* filename) const;
     unsigned bound_rgb(double in_color) const;
 
+    Sphere* ray_find(Ray& ray);
+    bool shadow(glm::vec3 pt, LightSource lt);
+    void pt_illum(Ray ray, glm::vec3 N, const Material& mat, glm::vec3 accum, glm::vec3 refatt);
+
     static constexpr int MAX_THREADS = 8;
-
     static constexpr float AIR_ETA = 1;
-
 };
 
 #endif //CS410_IMAGE_H

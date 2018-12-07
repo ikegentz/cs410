@@ -72,6 +72,62 @@ void Image::pixelPt(const unsigned i, const unsigned j, const double near,
     ray.set_direction(shoot);
 }
 
+Sphere* Image::ray_find(Ray& ray)
+{
+    for (Sphere s : data->spheres)
+        ray.sphere_test(s);
+
+    return ray.bestSphere;
+}
+
+bool Image::shadow(glm::vec3 pt, LightSource lt)
+{
+    glm::vec3 L = lt.position - pt;
+    Ray ray = Ray(pt, L);
+    float dtl = glm::dot(L, ray.get_direction());
+    for (Sphere s : data->spheres)
+    {
+        if(ray.sphere_test(s) && ray.best_t < dtl)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Image::pt_illum(Ray ray, glm::vec3 N, const Material& mat, glm::vec3 accum, glm::vec3 refatt)
+{
+    glm::vec3 color = glm::vec3(0.2f, 0.2f, 0.2f); // set initial color to ambient light
+    color.x *= mat.ka.x;
+    color.y *= mat.ka.y;
+    color.z *= mat.ka.z;
+
+    for (LightSource lt : data->light_sources)
+    {
+        glm::vec3 toL = glm::normalize(lt.position - ray.bestPt);
+
+        float NdotL = glm::dot(N, toL);
+        if(NdotL > 0.0f && !shadow(ray.bestPt, lt))
+        {
+            color.x *= mat.kd.x * lt.E.x * NdotL;
+            color.y *= mat.kd.y * lt.E.y * NdotL;
+            color.z *= mat.kd.z * lt.E.z * NdotL;
+            glm::vec3 toC = glm::normalize(ray.L - ray.bestPt);
+            glm::vec3 spR = glm::normalize((2 * NdotL * N) - toL);
+            float CdR = glm::dot(toC, spR);
+
+            if(CdR > 0.0f)
+            {
+                color.x += (mat.ks.x * lt.E.x) * pow(glm::dot(toC, spR), Sphere::PHONG); // Sphere PHONG constant
+                color.y += (mat.ks.y * lt.E.y) * pow(glm::dot(toC, spR), Sphere::PHONG); // Sphere PHONG constant
+                color.z += (mat.ks.z * lt.E.z) * pow(glm::dot(toC, spR), Sphere::PHONG); // Sphere PHONG constant
+            }
+        }
+    }
+    accum.x += refatt.x * mat.ko.x * color.x;
+    accum.y += refatt.y * mat.ko.y * color.y;
+    accum.z += refatt.z * mat.ko.z * color.z;
+}
 
 
 

@@ -15,6 +15,15 @@ Ray::Ray()
     this->bestSphere = nullptr;
 }
 
+Ray::Ray(glm::vec3 L, glm::vec3 D)
+{
+    this->L = L;
+    this->D = glm::normalize(D);
+    this->best_t = -1;
+    this->bestPt = glm::vec3(0,0,0);
+    this->bestSphere = nullptr;
+}
+
 void Ray::print() const
 {
 //    std::cout << "RAY\n" <<

@@ -36,6 +36,7 @@ public:
     glm::vec3 bestPt; // TODO ROSS
 
     Ray();
+    Ray(glm::vec3 L, glm::vec3 D);
     void print() const;
     void set_direction(glm::vec3 direc);
     glm::vec3 get_direction() const { return glm::normalize(this->D); }
