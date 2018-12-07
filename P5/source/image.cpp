@@ -206,38 +206,66 @@ void Image::process_pixel(Pixel &pixel, Ray& ray, int depth)
         pt = std::get<3>(cast_results_sphere);
     }
 
-    // for first loop, we want to set pixel EQUAL to color value
-    if(depth == data->recurse_depth)
+    // get base color
+    if (ray.hit)
     {
-        if (ray.hit)
-        {
-            if (ray.hit_sphere)
-                pixel.rgba = this->color_me_sphere(pt, ray, the_hit_sphere);
-            else
-                pixel.rgba = this->color_me(pixel.ray.get_direction() * float(ray.last_t) + data->camera.eye, mat, ray);
-        }
+        if (ray.hit_sphere)
+            pixel.rgba = this->color_me_sphere(pt, ray, the_hit_sphere);
         else
-        {
-            pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
-            depth = -1;
-        }
+            pixel.rgba = this->color_me(pixel.ray.get_direction() * float(ray.last_t) + data->camera.eye, mat, ray);
     }
-    // otherwise we are recursing and want to ADD to pixel color, the reflected surface color
     else
     {
-        if(ray.hit)
+        pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
+        depth = -1;
+    }
+
+    if(ray.hit_sphere)
+    {
+        // refract if translucent
+        float sum_ko = the_hit_sphere.material.ko.x + the_hit_sphere.material.ko.y + the_hit_sphere.material.ko.z;
+        if (sum_ko < 3.0f)
         {
-            if (ray.hit_sphere)
-                pixel.rgba += this->color_me_sphere(pt, ray, the_hit_sphere);
-            else
-                pixel.rgba += this->color_me(pixel.ray.get_direction() * float(ray.last_t) + data->camera.eye, mat, ray);
-        }
-        else
-        {
-            pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
-            depth = -1;
+            bool test;
+            Ray fraR;
+            std::tie(test, fraR) = refract_exit(-1.0f * ray.get_direction(), pt, the_hit_sphere.material.eta, the_hit_sphere);
+
+            if(test)
+            {
+                cast_results = ray_cast_model(fraR);
+                if(std::get<0>(cast_results) == true)
+                {
+                    fraR.last_t = std::get<1>(cast_results);
+                    fraR.hit = true;
+                    fraR.hit_sphere = false;
+                    fraR.Av = std::get<2>(cast_results);
+                    fraR.Bv = std::get<3>(cast_results);
+                    fraR.Cv = std::get<4>(cast_results);
+                    mat = data->models[std::get<5>(cast_results)].material;
+
+                    glm::vec4 refract_color = this->color_me(fraR.get_direction() * float(fraR.last_t) + data->camera.eye, mat, fraR);
+                    pixel.rgba += refract_color;
+                }
+            }
         }
     }
+
+    // otherwise we are recursing and want to ADD to pixel color, the reflected surface color
+//    else
+//    {
+//        if(ray.hit)
+//        {
+//            if (ray.hit_sphere)
+//                pixel.rgba += this->color_me_sphere(pt, ray, the_hit_sphere);
+//            else
+//                pixel.rgba += this->color_me(pixel.ray.get_direction() * float(ray.last_t) + data->camera.eye, mat, ray);
+//        }
+//        else
+//        {
+//            pixel.rgba = glm::vec4(0.0, 0.0, 0.0, 1.0); // write black for background color
+//            depth = -1;
+//        }
+//    }
     // process_pixel(..., ..., depth-1);
 }
 
