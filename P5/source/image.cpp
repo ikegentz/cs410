@@ -129,6 +129,66 @@ void Image::pt_illum(Ray ray, glm::vec3 N, const Material& mat, glm::vec3& accum
     accum.z += refatt.z * mat.ko.z * color.z;
 }
 
+//        hit? where?  Av        Bv          Cv      model_index
+std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> Image::ray_cast_model(const Ray& ray)
+{
+    glm::vec3 retAv, retBv, retCv;
+    int model_index = 0, i = 0;
+    bool hit = false;
+    double last_t = -1;
+
+    for(Model m : data->models)
+    {
+        // get vertices so we can use face indices
+        std::vector <Vertex> verts = m.obj.vertices;
+        // get each face in the object
+        for (unsigned face_index = 0; face_index < m.obj.faces.size(); ++face_index)
+        {
+            Face f = m.obj.faces[face_index];
+            Vertex A = verts[f.v1 - 1];
+            Vertex B = verts[f.v2 - 1];
+            Vertex C = verts[f.v3 - 1];
+
+            glm::vec3 Av = glm::vec3(A.x, A.y, A.z);
+            glm::vec3 Bv = glm::vec3(B.x, B.y, B.z);
+            glm::vec3 Cv = glm::vec3(C.x, C.y, C.z);
+
+            glm::vec3 Lv = ray.L;
+            glm::vec3 Dv = ray.get_direction();
+
+            glm::mat3x3 M = glm::mat3x3(Av - Bv, Av - Cv, Dv);
+            glm::mat3x3 M1 = glm::mat3x3(Av - Lv, Av - Cv, Dv);
+            glm::mat3x3 M2 = glm::mat3x3(Av - Bv, Av - Lv, Dv);
+            glm::mat3x3 M3 = glm::mat3x3(Av - Bv, Av - Cv, Av - Lv);
+
+            double detM = glm::determinant(M);
+            double beta = glm::determinant(M1) / detM;
+            double gamma = glm::determinant(M2) / detM;
+            double t = glm::determinant(M3) / detM;
+
+
+            if (beta >= 0.0 && gamma >= 0.0 && beta + gamma <= 1.0 && t > 0.0)
+            {
+                if (t < last_t || !hit)
+                {
+                    last_t = t;
+                    hit = true;
+                    retAv = Av;
+                    retBv = Bv;
+                    retCv = Cv;
+                    model_index = i;
+                }
+            }
+        }
+        ++i;
+    }
+
+    if(hit)
+        return std::make_tuple(true, last_t, retAv, retBv, retCv, model_index);
+    else
+        return std::make_tuple(false, -1, retAv, retBv, retCv, model_index);
+}
+
 glm::vec3 Image::ray_trace(Ray ray, glm::vec3& accum, glm::vec3 refatt, int level)
 {
     if(ray_find(ray))

@@ -57,6 +57,10 @@ public:
     glm::vec3 ray_trace(Ray ray, glm::vec3& accum, glm::vec3 refatt, int level);
     static constexpr int MAX_THREADS = 8;
     static constexpr float AIR_ETA = 1;
+
+
+    std::tuple<bool, double, glm::vec3, glm::vec3, glm::vec3, int> ray_cast_model(const Ray& ray);
+
 };
 
 #endif //CS410_IMAGE_H
