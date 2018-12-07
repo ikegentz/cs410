@@ -29,9 +29,11 @@ public:
     static constexpr float PHONG = 16;
     static constexpr float AIR_ETA = 1.0f;
 
+    // returns direction of the ray
+    glm::vec3 refract_tray(glm::vec3 W, glm::vec3 pt, glm::vec3 N, float eta1, float eta2);
+    // returns point of a ray and the ray's direction
+    std::tuple<glm::vec3, glm::vec3> refract_exit(glm::vec3 W, glm::vec3 pt, float eta_in, float eta_out);
 
-    std::tuple<bool, glm::vec3> refract_tray(glm::vec3 W, glm::vec3 N, float eta1, float eta2);
-    std::tuple<bool, glm::vec3, glm::vec3> refract_exit(glm::vec3 W, glm::vec3 pt, float eta_inside, const Sphere& sphere);
 private:
 };
 
