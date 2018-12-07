@@ -228,6 +228,15 @@ glm::vec3 Image::ray_trace(Ray ray, glm::vec3& accum, glm::vec3 refatt, int leve
             }
         }
     }
+    // handle polygons
+    else {
+
+        bool test = std::get<0>(ray_cast_model(ray));
+        if (test) {
+            accum = glm::vec3(1.0, 0, 0);
+        }
+    }
+
     return accum;
 }
 
