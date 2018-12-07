@@ -23,7 +23,7 @@ public:
     float PHONG;
     float eta;
     void load_material(std::string filename);
-    void print();
+    void print() const;
 };
 
 #endif //CS410_MATERIAL_H

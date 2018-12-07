@@ -75,6 +75,7 @@ void Sphere::print()
     "\tKd: " << glm::to_string(this->material.kd) << "\n" <<
     "\tKs: " << glm::to_string(this->material.ks) << "\n" <<
     "\tKr: " << glm::to_string(this->material.kr) << "\n" <<
+    "\tKo: " << glm::to_string(this->material.ko) << "\n" <<
     "\tPHONG: " << this->PHONG << std::endl;
 }
 

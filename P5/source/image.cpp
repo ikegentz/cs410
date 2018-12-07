@@ -48,7 +48,7 @@ void Image::render_image()
             // cast this ray to see if it hits anything
             // this->process_pixel(this->pixel_array[row][col], this->pixel_array[row][col].ray, data->recurse_depth);
             glm::vec3 rgb = glm::vec3(0,0,0);
-            ray_trace(this->pixel_array[row][col].ray, rgb, glm::vec3(1.0, 1.0, 1.0), data->recurse_depth);
+            ray_trace(this->pixel_array[row][col].ray, rgb, glm::vec3(1.0f, 1.0f, 1.0f), data->recurse_depth);
             this->pixel_array[row][col].rgba = glm::vec4(rgb.x, rgb.y, rgb.z, 1.0f);
         }
     }
@@ -75,12 +75,12 @@ void Image::pixelPt(const unsigned i, const unsigned j, const double near,
     ray.set_direction(shoot);
 }
 
-Sphere* Image::ray_find(Ray& ray)
+bool Image::ray_find(Ray& ray)
 {
     for (Sphere s : data->spheres)
         ray.sphere_test(s);
 
-    return ray.bestSphere;
+    return ray.hit;
 }
 
 bool Image::shadow(glm::vec3 pt, LightSource lt)
@@ -100,10 +100,12 @@ bool Image::shadow(glm::vec3 pt, LightSource lt)
 
 void Image::pt_illum(Ray ray, glm::vec3 N, const Material& mat, glm::vec3& accum, glm::vec3 refatt)
 {
-    glm::vec3 color = glm::vec3(0.2f, 0.2f, 0.2f); // set initial color to ambient light
-    color.x *= mat.ka.x;
-    color.y *= mat.ka.y;
-    color.z *= mat.ka.z;
+    glm::vec3 color; // set initial color to ambient light
+    color.x = mat.ka.x;
+    color.y = mat.ka.y;
+    color.z = mat.ka.z;
+    //std::cout << "AMB: " << glm::to_string(color) << std::endl;
+
 
     for (LightSource lt : data->light_sources)
     {
@@ -112,9 +114,17 @@ void Image::pt_illum(Ray ray, glm::vec3 N, const Material& mat, glm::vec3& accum
         float NdotL = glm::dot(N, toL);
         if(NdotL > 0.0f && !shadow(ray.bestPt, lt))
         {
-            color.x *= mat.kd.x * lt.E.x * NdotL;
-            color.y *= mat.kd.y * lt.E.y * NdotL;
-            color.z *= mat.kd.z * lt.E.z * NdotL;
+          //  std::cout << "PRE: " << glm::to_string(color) << std::endl;
+
+            color.x += mat.kd.x * lt.E.x * NdotL;
+            color.y += mat.kd.y * lt.E.y * NdotL;
+            color.z += mat.kd.z * lt.E.z * NdotL;
+
+           // std::cout << "POST: " << glm::to_string(color) << std::endl << std::endl;
+
+            //std::cout << "LIGHT: " << glm::to_string(lt.E) << std::endl;
+            //std::cout << "NdotL: " << NdotL << std::endl;
+
             glm::vec3 toC = glm::normalize(ray.L - ray.bestPt);
             glm::vec3 spR = glm::normalize((2 * NdotL * N) - toL);
             float CdR = glm::dot(toC, spR);
@@ -134,10 +144,10 @@ void Image::pt_illum(Ray ray, glm::vec3 N, const Material& mat, glm::vec3& accum
 
 glm::vec3 Image::ray_trace(Ray ray, glm::vec3& accum, glm::vec3 refatt, int level)
 {
-    if(ray_find(ray) != nullptr)
+    if(ray_find(ray))
     {
-        glm::vec3 N = glm::normalize(ray.bestPt - ray.bestSphere->C);
-        Material mat = ray.bestSphere->material;
+        glm::vec3 N = glm::normalize(ray.bestPt - ray.bestSphere.C);
+        Material mat = ray.bestSphere.material;
         pt_illum(ray, N, mat, accum, refatt);
         // REFLECTION
         if(level > 0)
@@ -149,27 +159,29 @@ glm::vec3 Image::ray_trace(Ray ray, glm::vec3& accum, glm::vec3 refatt, int leve
             accum.x += refatt.x * mat.ko.x * flec.x;
             accum.y += refatt.y * mat.ko.y * flec.y;
             accum.z += refatt.z * mat.ko.z * flec.z;
+            std::cout << "MADE IT HERE REFLECT!!!" << std::endl;
         }
         // REFRACTION
-//        if(level > 0 && mat.ko.x+mat.ko.y+mat.ko.z < 3.0f)
-//        {
-//            glm::vec3 thru = glm::vec3(0,0,0);
-//            bool test;
-//            glm::vec3 pos;
-//            glm::vec3 direc;
-//            std::tie(test, pos, direc) = ray.bestSphere->refract_exit(-1.0f*ray.get_direction(),ray.bestPt, mat.eta, *ray.bestSphere);
-//            if(test)
-//            {
-//                glm::vec3 temp;
-//                temp.x = mat.kr.x * refatt.x;
-//                temp.y = mat.kr.y * refatt.y;
-//                temp.z = mat.kr.z * refatt.z;
-//                ray_trace(Ray(pos, direc), thru, temp, level-1); // TODO FINISH THIS -- CHECK MAT.ko??
-//                accum.x += refatt.x * (1.0 - mat.ko.x) * thru.x;
-//                accum.y += refatt.y * (1.0 - mat.ko.y) * thru.y;
-//                accum.z += refatt.z * (1.0 - mat.ko.z) * thru.z;
-//            }
-//        }
+        if(level > 0 && mat.ko.x+mat.ko.y+mat.ko.z < 3.0f)
+        {
+            glm::vec3 thru = glm::vec3(0,0,0);
+            bool test;
+            glm::vec3 pos;
+            glm::vec3 direc;
+            std::tie(test, pos, direc) = ray.bestSphere.refract_exit(-1.0f*ray.get_direction(),ray.bestPt, mat.eta, ray.bestSphere);
+            if(test)
+            {
+                glm::vec3 temp;
+                temp.x = mat.kr.x * refatt.x;
+                temp.y = mat.kr.y * refatt.y;
+                temp.z = mat.kr.z * refatt.z;
+                ray_trace(Ray(pos, direc), thru, temp, level-1); // TODO FINISH THIS -- CHECK MAT.ko??
+                accum.x += refatt.x * (1.0 - mat.ko.x) * thru.x;
+                accum.y += refatt.y * (1.0 - mat.ko.y) * thru.y;
+                accum.z += refatt.z * (1.0 - mat.ko.z) * thru.z;
+                std::cout << "MADE IT HERE REFRACT!!!" << std::endl;
+            }
+        }
     }
     return accum;
 }

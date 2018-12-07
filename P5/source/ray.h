@@ -33,7 +33,7 @@ public:
     // did we hit a sphere?
     bool hit_sphere;
 
-    Sphere* bestSphere; // TODO ROSS
+    Sphere bestSphere; // TODO ROSS
     glm::vec3 bestPt; // TODO ROSS
 
     Ray();
@@ -43,7 +43,7 @@ public:
     glm::vec3 get_direction() const { return glm::normalize(this->D); }
     glm::vec3 get_direction_full() const {return this->D;};
 
-    bool sphere_test(Sphere& sph);// TODO ROSS
+    bool sphere_test(Sphere sph);// TODO ROSS
 };
 
 #endif //CS410_RAY_H

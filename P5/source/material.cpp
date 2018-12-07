@@ -90,12 +90,13 @@ void Material::load_material(std::string filename)
     }
 }
 
-void Material::print()
+void Material::print() const
 {
     std::cout << "MATERIAL" << "\n" <<
     "\tKa: " << glm::to_string(this->ka) << "\n" <<
     "\tKd: " << glm::to_string(this->kd) << "\n" <<
     "\tKs: " << glm::to_string(this->ks) << "\n" <<
     "\tKr: " << glm::to_string(this->kr) << "\n" <<
+    "\tKo: " << glm::to_string(this->ko) << "\n" <<
     "\tPHONG: " << this->PHONG << std::endl;
 }

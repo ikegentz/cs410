@@ -12,7 +12,9 @@ Ray::Ray()
     this->best_t = std::numeric_limits<float>::max();
 
     this->bestPt = glm::vec3(0,0,0);
-    this->bestSphere = nullptr;
+    this->bestSphere = Sphere();
+
+    this->hit = false;
 }
 
 Ray::Ray(glm::vec3 L, glm::vec3 D)
@@ -21,14 +23,15 @@ Ray::Ray(glm::vec3 L, glm::vec3 D)
     this->D = glm::normalize(D);
     this->best_t = std::numeric_limits<float>::max();
     this->bestPt = glm::vec3(0,0,0);
-    this->bestSphere = nullptr;
+    this->hit = false;
+    this->bestSphere = Sphere();
 }
 
 void Ray::print() const
 {
-//    std::cout << "RAY\n" <<
-//    "\t" << "Position: " << glm::to_string(this->position) << "\n" <<
-//    "\t" << "Direction: " << glm::to_string(this->direction) << std::endl;
+    std::cout << "RAY\n" <<
+    "\t" << "Position: " << glm::to_string(this->L) << "\n" <<
+    "\t" << "Direction: " << glm::to_string(this->D) << std::endl;
 }
 
 void Ray::set_direction(glm::vec3 direc)
@@ -36,10 +39,10 @@ void Ray::set_direction(glm::vec3 direc)
     this->D = direc;
 }
 
-bool Ray::sphere_test(Sphere& sph)
+bool Ray::sphere_test(Sphere sph)
 {
     glm::vec3 Tv = sph.C - this->L;
-    float v = glm::dot(Tv, this->D);
+    float v = glm::dot(Tv, this->get_direction());
     float csq = glm::dot(Tv, Tv);
     float disc = sph.r*sph.r - (csq - v*v);
     if(disc > 0)
@@ -48,8 +51,9 @@ bool Ray::sphere_test(Sphere& sph)
         if(tval < this->best_t && tval > 0.001f)
         {
             this->best_t = tval;
-            this->bestSphere = &sph;
+            this->bestSphere = sph;
             this->bestPt = this->L + tval*this->D;
+            this->hit = true;
             return true;
         }
     }
